@@ -62,7 +62,7 @@ The file header contains basic information on the Videocart (name/author/version
 
 # Packet Overview
 
-Packets serve as hardware descriptors, providing information on what hardware the game expects to be present. ROM packets are special, as they provides the data that is (or would be) present in the on-board ROM.
+Packets serve as hardware descriptors, providing information on what hardware the game expects to be present. Some packets are special, as they provides the data that is (or would be) present in the on-board ROM / NVRAM.
 
 # Packet Header
 
