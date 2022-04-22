@@ -83,7 +83,7 @@ The packet header contains basic information on how the expected hardware is acc
 | Chip type               | 2              | Described below                                              |
 | Starting address        | 2              | Where the memory region starts <br/> `$0000` for ports                              |
 | Length                  | 2              | The size of the memory region  <br/> 1-256 for ports                                |
-| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF <br/> A list of port addresses|
+| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF <br/> Or a list of port addresses|
 
 **Designated Chip Types**
 
