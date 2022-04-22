@@ -2,7 +2,7 @@
 
 # The Channel F Cartridge Image Format (.chf)
  
-![badge](https://badgen.net/badge/version/v0.2/orange?style=flat-square)
+![badge](https://badgen.net/badge/version/v0.3/orange?style=flat-square)
 
 A file format to store games made for the Fairchild Channel F. Based on the [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator.
 
@@ -45,28 +45,24 @@ The file header contains basic information on the Videocart (name/author/version
 | Magic number            | 8              | `CHANNELF`. Used to detect a valid file.                     |
 | Header length           | 2              |                                                              |
 | File Format Version     | 2              | `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| File attributes         | 1              | The flashcart runs this file on boot if bit 0 is set `xxxxxxx1`. Other implementations should ignore this flag |
-| Reserved for future use | 3              |                                                              |
+| Hardware type           | 2              | The packets to expect. Described below                       |
+| Reserved for future use | 2              |                                                              |
 | Videocart version       | 2              | The game version major/minor (e.g. maze ver 3.2 = `$02 $03`) |
 | Videocart name length   | 1              | Allows a length of 1 - 256                                   |
 | Videocart name          | 1 - 256        |                                                              |
 | Videocart author length | 1              | Allows a length of 1 - 256                                   |
 | Videocart author        | 1 - 256        |                                                              |
 
+**Designated Hardware type**
+
+| Name                    | Hardware Type Value | Description                                                  |
+| ----------------------- | -------------- | ------------------------------------------------------------ |
+| Normal                  | \$0000         | Packets do not overlap                                       |
+
+
 # Packet Overview
 
 Packets serve as hardware descriptors, providing information on what hardware the game expects to be present. ROM packets are special, as they provides the data that is (or would be) present in the on-board ROM.
-The flexibility provided can be abused by developers, and as such it's strongly encouraged to adhere to the following standards:
-
-**Expected memory maps**
-- 8-bit SRAM = \$2800 - \$3000
-- LED = \$3800 - \$4000
-
-**Expected port maps**
-- 1-bit SRAM = 0x18/0x19
-- programmable interrupt vector address = 0x0C/0x0D
-- programmable timer = 0x0E
-- interrupt control = 0x0F
 
 # Packet Header
 
@@ -78,38 +74,39 @@ The packet header contains basic information on how the expected hardware is acc
   *Placeholder*
 </div>
 
+**Memory-mapped Packet**
+
 | Name                    | Length (bytes) | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
 | Magic number            | 4              | `CHIP`. Used to detect a valid file.                         |
-| Total packet length     | 2              | Header + Data(ROM only)                                      |
+| Total packet length     | 2              | Header + Data(only some chip types)                          |
 | Chip type               | 2              | Described below                                              |
-
-| Name                    | Length (bytes) | Description                                                  |
-| ----------------------- | -------------- | ------------------------------------------------------------ |
 | Starting address        | 2              | Where the memory region starts                               |
-| Range / Data length     | 2              | The size of the memory region                                |
-| Data                    | 1 - 63,488     | Only present for the `ROM` chip type. Technically supports up to 65,536 bytes but the first 2K will always be shadowed by the BIOS |
+| Length                  | 2              | The size of the memory region                                |
+| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
+
+**Port-mapped Packet**
 
 | Name                    | Length (bytes) | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
-| Port addresses          | 1 - 256        | Only present for `Port-mapped` chip types. The port address for                               |
+| Magic number            | 4              | `CHIP`. Used to detect a valid file.                         |
+| Total packet length     | 2              | Header + Port list                                           |
+| Chip type               | 2              | Described below                                              |
+| Port count              | 1              | The amount of ports used. Typically 1 or 2                   |
+| Port addresses          | 1 - 256        | A list of port addresses                                     |
 
 **Designated Chip Types**
 
-| Name          | Chip Type Value | Mapping | Comments                                                     |
-| ------------- | --------------- | ------- | ------------------------------------------------------------ |
-| ROM           | $0000           | Memory  | This memory range is Read-only                               |
-| NV-RAM        | $0001           | Memory  | This memory range is non-volatile and read/write-able        |
-| 8-bit SRAM    | $0002           | Memory  | This memory range is read/write-able                         |
-| 1-bit SRAM    | $0003           | Port    | ports described [here](http://seanriddle.com/mazepat.asm)    |
-| LED           | $0004           | Memory  | Writing to this memory range toggles the LED                 |
-| Programmable interrupt vector address    | $0007           | Port    | From the 3853 SMI IC              |
-| Programmable timer    | $0008           | Port    | From the 3853 SMI IC                                 |
-| Interrupt control    | $0009           | Port    | From the 3853 SMI IC                                  |
-| Multimenu     | $0006           | Memory  | Provides 4 special registers used by the multimenu           |
-| Bank Scheme 1 | $0005           | Memory  | A banking scheme providing 62KiB ROM/62KiB RAM. An 8-bit control Latch is present at $FFFF |
-
-Are banking packets the only thing that would change packet interpretation? If so, perhaps they should be placed in the file header
+| Name          | Chip Type Value | Mapping | Comments                                                     | Typical Range/Port | Has data |
+| ------------- | --------------- | ------- | ------------------------------------------------------------ | ------- | -- |
+| ROM           | $0000           | Memory  | This memory range is Read-only                               | \$0800 - \$FFFF | Y |
+| NV-RAM        | $0001           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
+| 8-bit SRAM    | $0002           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
+| 1-bit SRAM    | $0003           | Port    | ports described [here](http://seanriddle.com/mazepat.asm)    | 0x18/0x19 | |
+| LED           | $0004           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 | Y |
+| Programmable interrupt vector address    | $0005           | Port    | From the 3853 SMI IC              | 0x0C/0x0D | |
+| Programmable timer    | $0006           | Port    | From the 3853 SMI IC                                 | 0x0E | |
+| Interrupt control    | $0007           | Port    | From the 3853 SMI IC                                  | 0x0F | |
 
 # Credits
 
