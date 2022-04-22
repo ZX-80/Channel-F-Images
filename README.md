@@ -25,4 +25,4 @@ A file format to store games made for the Fairchild Channel F. Based on the [Car
 # Packet Header
 # Credits
 
-Developed by e5frog (from AtariAge) and 3DMAZE
+Developed by e5frog (from AtariAge) and Jefferson A. (3DMAZE at AtariAge)
