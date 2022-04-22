@@ -74,26 +74,16 @@ The packet header contains basic information on how the expected hardware is acc
   *Placeholder*
 </div>
 
-**Memory-mapped Packet**
+**Packets**
 
 | Name                    | Length (bytes) | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
 | Magic number            | 4              | `CHIP`. Used to detect a valid file.                         |
 | Total packet length     | 2              | Header + Data(only some chip types)                          |
 | Chip type               | 2              | Described below                                              |
-| Starting address        | 2              | Where the memory region starts                               |
-| Length                  | 2              | The size of the memory region                                |
-| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
-
-**Port-mapped Packet**
-
-| Name                    | Length (bytes) | Description                                                  |
-| ----------------------- | -------------- | ------------------------------------------------------------ |
-| Magic number            | 4              | `CHIP`. Used to detect a valid file.                         |
-| Total packet length     | 2              | Header + Port list                                           |
-| Chip type               | 2              | Described below                                              |
-| Port count              | 1              | The amount of ports used. Typically 1 or 2                   |
-| Port addresses          | 1 - 256        | A list of port addresses                                     |
+| Starting address        | 2              | Where the memory region starts <br/> `$0000` for ports                              |
+| Length                  | 2              | The size of the memory region  <br/> 1-256 for ports                                |
+| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF <br/> A list of port addresses|
 
 **Designated Chip Types**
 
