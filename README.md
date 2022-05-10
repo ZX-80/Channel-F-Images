@@ -42,10 +42,10 @@ The file header contains basic information on the Videocart (name/author/version
 
 | Name                    | Length (bytes) | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
-| Magic number            | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
-| Header length           | 4              |                                                              |
-| File Format Version     | 2              | `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Hardware type           | 2              | The banking scheme that's used                               |
+| Cartridge signature     | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
+| File header length      | 4              |                                                              |
+| Cartridge Version       | 2              | The version of the file format being used. Typically `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
+| Cartridge Hardware type | 2              | The banking scheme that's used                               |
 | Reserved for future use | 8              |                                                              |
 | Videocart version       | 2              | The game version major/minor (e.g. maze ver 3.2 = `$02 $03`) |
 | Videocart name length   | 1              | Allows a length of 1 - 256                                   |
@@ -78,12 +78,12 @@ The packet header contains basic information on how the expected hardware is acc
 
 | Name                    | Length (bytes) | Memory-mapped Description                                    | Port-mapped Description |
 | ----------------------- | -------------- | ------------------------------------------------------------ | ----------------------- |
-| Magic number            | 4              | `CHIP`. Used to detect a valid file.                         | Same as Memory-mapped   |
+| Signature               | 4              | `CHIP`. Used to detect a valid file.                         | Same as Memory-mapped   |
 | Total packet length     | 4              | Header + Data(only some chip types)                          | Same as Memory-mapped   |
 | Chip type               | 2              | Described below                                              | Same as Memory-mapped   |
-| Bank Number             | 2              | Used for banking. Always `$0000` for a normal hardware type  | Same as Memory-mapped   |
-| Starting address        | 2              | Where the memory region starts                               | Always `$0000`          |
-| Length                  | 2              | The size of the memory region                                | The amount of ports used (1 - 256) |
+| Bank number             | 2              | Used for banking. Always `$0000` for a normal hardware type  | Same as Memory-mapped   |
+| Starting load address   | 2              | Where the memory region starts                               | Always `$0000`          |
+| Image size in bytes     | 2              | The size of the memory region                                | The amount of ports used (1 - 256) |
 | Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF | A list of port addresses |
 
 **Designated Chip Types**
@@ -91,10 +91,10 @@ The packet header contains basic information on how the expected hardware is acc
 | Name          | Chip Type Value | Mapping | Comments                                                     | Typical Range/Port | Has data |
 | ------------- | --------------- | ------- | ------------------------------------------------------------ | ------- | -- |
 | ROM           | $0000           | Memory  | This memory range is Read-only                               | \$0800 - \$FFFF | Y |
-| 8-bit SRAM    | $0001           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
+| 8-bit RAM     | $0001           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
 | LED           | $0002           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 | Y |
-| NV-RAM        | $0003           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
-| 1-bit SRAM    | $0004           | Port    | Ports described [here](http://seanriddle.com/mazepat.asm)    | 0x18/0x19 | |
+| NVRAM         | $0003           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
+| 1-bit RAM     | $0004           | Port    | Ports described [here](http://seanriddle.com/mazepat.asm)    | 0x18/0x19 | |
 | Programmable interrupt vector address    | $0005           | Port    | From the 3853 SMI IC              | 0x0C/0x0D | |
 | Programmable timer    | $0006           | Port    | From the 3853 SMI IC                                 | 0x0E | |
 | Interrupt control    | $0007           | Port    | From the 3853 SMI IC                                  | 0x0F | |
