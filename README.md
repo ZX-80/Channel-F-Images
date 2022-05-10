@@ -42,11 +42,11 @@ The file header contains basic information on the Videocart (name/author/version
 
 | Name                    | Length (bytes) | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
-| Magic number            | 8              | `CHANNELF`. Used to detect a valid file.                     |
-| Header length           | 2              |                                                              |
+| Magic number            | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
+| Header length           | 4              |                                                              |
 | File Format Version     | 2              | `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Hardware type           | 2              | The packets to expect. Described below                       |
-| Reserved for future use | 2              |                                                              |
+| Hardware type           | 2              | The banking scheme that's used                               |
+| Reserved for future use | 8              |                                                              |
 | Videocart version       | 2              | The game version major/minor (e.g. maze ver 3.2 = `$02 $03`) |
 | Videocart name length   | 1              | Allows a length of 1 - 256                                   |
 | Videocart name          | 1 - 256        |                                                              |
@@ -57,7 +57,7 @@ The file header contains basic information on the Videocart (name/author/version
 
 | Name                    | Hardware Type Value | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
-| Normal                  | \$0000         | Packets do not overlap                                       |
+| Normal                  | \$0000         | No banking                                                   |
 
 
 # Packet Overview
@@ -79,8 +79,9 @@ The packet header contains basic information on how the expected hardware is acc
 | Name                    | Length (bytes) | Description                                                  |
 | ----------------------- | -------------- | ------------------------------------------------------------ |
 | Magic number            | 4              | `CHIP`. Used to detect a valid file.                         |
-| Total packet length     | 2              | Header + Data(only some chip types)                          |
+| Total packet length     | 4              | Header + Data(only some chip types)                          |
 | Chip type               | 2              | Described below                                              |
+| Bank Number             | 2              | Used for banking. Always `$0000` for a normal hardware type  |
 | Starting address        | 2              | Where the memory region starts <br/> `$0000` for ports                              |
 | Length                  | 2              | The size of the memory region  <br/> 1-256 for ports                                |
 | Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF <br/> Or a list of port addresses|
