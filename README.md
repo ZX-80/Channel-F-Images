@@ -81,7 +81,7 @@ The packet header contains basic information on how the expected hardware is acc
 | Signature               | 4              | `CHIP`. Used to detect a valid file.                         | Same as Memory-mapped   |
 | Total packet length     | 4              | Header + Data(only some chip types)                          | Same as Memory-mapped   |
 | Chip type               | 2              | Described below                                              | Same as Memory-mapped   |
-| Bank number             | 2              | Used for banking. Always `$0000` for a normal hardware type  | Always `$0000`          |
+| Bank number             | 2              | Used for banking. Always `$0000` for a normal hardware type  | Same as Memory-mapped   |
 | Starting load address   | 2              | Where the memory region starts                               | Always `$0000`          |
 | Image size in bytes     | 2              | The size of the memory region                                | The amount of ports used (1 - 256) |
 | Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF | A list of port addresses |
