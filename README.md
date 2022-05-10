@@ -2,7 +2,7 @@
 
 # The Channel F Cartridge Image Format (.chf)
  
-![badge](https://badgen.net/badge/version/v0.3/orange?style=flat-square)
+![badge](https://badgen.net/badge/version/v0.4/orange?style=flat-square)
 
 A file format to store games made for the Fairchild Channel F. Based on the [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator.
 
