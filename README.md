@@ -76,25 +76,25 @@ The packet header contains basic information on how the expected hardware is acc
 
 **Packets**
 
-| Name                    | Length (bytes) | Description                                                  |
-| ----------------------- | -------------- | ------------------------------------------------------------ |
-| Magic number            | 4              | `CHIP`. Used to detect a valid file.                         |
-| Total packet length     | 4              | Header + Data(only some chip types)                          |
-| Chip type               | 2              | Described below                                              |
-| Bank Number             | 2              | Used for banking. Always `$0000` for a normal hardware type  |
-| Starting address        | 2              | Where the memory region starts <br/> `$0000` for ports                              |
-| Length                  | 2              | The size of the memory region  <br/> 1-256 for ports                                |
-| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF <br/> Or a list of port addresses|
+| Name                    | Length (bytes) | Memory-mapped Description                                    | Port-mapped Description |
+| ----------------------- | -------------- | ------------------------------------------------------------ | ----------------------- |
+| Magic number            | 4              | `CHIP`. Used to detect a valid file.                         | Same as Memory-mapped   |
+| Total packet length     | 4              | Header + Data(only some chip types)                          | Same as Memory-mapped   |
+| Chip type               | 2              | Described below                                              | Same as Memory-mapped   |
+| Bank Number             | 2              | Used for banking. Always `$0000` for a normal hardware type  | Same as Memory-mapped   |
+| Starting address        | 2              | Where the memory region starts                               | Always `$0000`          |
+| Length                  | 2              | The size of the memory region                                | The amount of ports used (1 - 256) |
+| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF | A list of port addresses |
 
 **Designated Chip Types**
 
 | Name          | Chip Type Value | Mapping | Comments                                                     | Typical Range/Port | Has data |
 | ------------- | --------------- | ------- | ------------------------------------------------------------ | ------- | -- |
 | ROM           | $0000           | Memory  | This memory range is Read-only                               | \$0800 - \$FFFF | Y |
-| NV-RAM        | $0001           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
-| 8-bit SRAM    | $0002           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
-| 1-bit SRAM    | $0003           | Port    | ports described [here](http://seanriddle.com/mazepat.asm)    | 0x18/0x19 | |
-| LED           | $0004           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 | Y |
+| 8-bit SRAM    | $0001           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
+| LED           | $0002           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 | Y |
+| NV-RAM        | $0003           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
+| 1-bit SRAM    | $0004           | Port    | Ports described [here](http://seanriddle.com/mazepat.asm)    | 0x18/0x19 | |
 | Programmable interrupt vector address    | $0005           | Port    | From the 3853 SMI IC              | 0x0C/0x0D | |
 | Programmable timer    | $0006           | Port    | From the 3853 SMI IC                                 | 0x0E | |
 | Interrupt control    | $0007           | Port    | From the 3853 SMI IC                                  | 0x0F | |
