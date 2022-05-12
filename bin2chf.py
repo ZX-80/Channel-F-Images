@@ -25,31 +25,29 @@ class ChfData:
 
 def generate_chf(chf_data: ChfData) -> None:
     # TODO: Use the provided class to generate a chf file
-    chf_data.name = input("Enter Videocart name: ")
-    chf_data.author = input("Enter Videocart author: ")
-    chf_data.version = float(input("Enter Videocart version: "))
+    if chf_data.name == None:
+        chf_data.name = input("Enter Videocart name: ")
+    if chf_data.author == None:
+        chf_data.author = input("Enter Videocart author: ")
+    if chf_data.version == None:
+        chf_data.version = float(input("Enter Videocart version: "))
     print(f"Output {chf_data.name[16:]}.chf")
 
 if __name__ == "__main__":
-    positive_responses = ['Y', 'YES', '']
-    if input("Use presets [Y/n]: ").upper() in positive_responses:
-        # TODO: Load presets from files in presets folder
-        print(" 0) Normal (Videocarts 1-26)")
-        print("      ROM 0x0800 - 0xFFFF                ;up to 64K")
-        print(" 1) 2102 SRAM (Videocarts 10 / 18)")
-        print("      ROM 0x0800 - 0xFFFF                ;up to 64K")
-        print("      I/O Port: SRAM                     ;2K")
-        print(" 2) Chess (Saba Chess)")
-        print("      ROM 0x0800 - 0x2800                ;up to 8K")
-        print("     SRAM 0x2800 - 0x3000                ;2K")
-        print("      LED 0x3800 - 0xFFFF                ;up to 52K")
-        print(" 3) FRAM (Homebrew only)")
-        print("      ROM 0x0800 - 0x2800                ;up to 8K")
-        print("     FRAM 0x2800 - 0x3000                ;2K")
-        print("      ROM 0x3000 - 0xFFFF                ;up to 52K")
-        input("Which preset [0-3]: ")
-        generate_chf()
-    else:
-        input("Enter preset file address: ")
-        # TODO: Read preset file (ini?)
-        generate_chf()
+    # TODO: Load presets from files in presets folder
+    print(" 0) Official (Videocarts 1-26)")
+    print("      ROM 0x0800 - 0xFFFF                ;62K")
+    print("      I/O Ports: SRAM")
+    print(" 1) Schach (Videoplay 20)")
+    print("      ROM 0x0800 - 0x2000                ;6K")
+    print("     SRAM 0x2800 - 0x3000                ;2K")
+    print("      LED 0x3800 - 0x4000                ;2K")
+    print(" 2) Homebrew (Example)")
+    print("      ROM 0x0800 - 0x2000                ;6K")
+    print("     FRAM 0x2000 - 0x2800                ;2K")
+    print("     SRAM 0x2800 - 0x3000                ;2K")
+    print("      ROM 0x3000 - 0xFFFF                ;50K")
+    print("      I/O Ports: SRAM, Random, 3853 SMI")
+    input("Which preset [0-2]: ")
+    chf_data = None # TODO: Read preset file (ini?)
+    generate_chf(chf_data)
