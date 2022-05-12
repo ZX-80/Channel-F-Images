@@ -25,12 +25,6 @@ class ChfData:
 
 def generate_chf(chf_data: ChfData) -> None:
     # TODO: Use the provided class to generate a chf file
-    if chf_data.name == None:
-        chf_data.name = input("Enter Videocart name: ")
-    if chf_data.author == None:
-        chf_data.author = input("Enter Videocart author: ")
-    if chf_data.version == None:
-        chf_data.version = float(input("Enter Videocart version: "))
     print(f"Output {chf_data.name[16:]}.chf")
 
 if __name__ == "__main__":
@@ -50,4 +44,12 @@ if __name__ == "__main__":
     print("      I/O Ports: SRAM, Random, 3853 SMI")
     input("Which preset [0-2]: ")
     chf_data = None # TODO: Read preset file (ini?)
+    
+    if chf_data.name == None:
+        chf_data.name = input("Enter Videocart name: ")
+    if chf_data.author == None:
+        chf_data.author = input("Enter Videocart author: ")
+    if chf_data.version == None:
+        chf_data.version = float(input("Enter Videocart version: "))
+
     generate_chf(chf_data)
