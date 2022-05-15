@@ -103,12 +103,12 @@ The packet header contains basic information on how the expected hardware is acc
 
 ### Designated Chip Types
 
-| Name          | Chip Type Value | Mapping | Comments                                                          | Typical Range   | Has data |
-| ------------- | --------------- | ------- | ----------------------------------------------------------------- | --------------- | :------: |
-| ROM           | $0000           | Memory  | This memory range is Read-only                                    | \$0800 - \$FFFF |    Y     |
-| 8-bit RAM     | $0001           | Memory  | This memory range is read/write-able                              | \$2800 - \$3000 |          |
-| LED           | $0002           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 |    Y     |
-| NVRAM         | $0003           | Memory  | This memory range is non-volatile and read/write-able             |                 |    Y     |
+| Name          | Chip Type Value | Comments                                                          | Typical Range   | Has data |
+| ------------- | --------------- | ----------------------------------------------------------------- | --------------- | :------: |
+| ROM           | $0000           | This memory range is Read-only                                    | \$0800 - \$FFFF |    Y     |
+| RAM           | $0001           | This memory range is read/write-able                              | \$2800 - \$3000 |          |
+| LED           | $0002           | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 |    Y     |
+| NVRAM         | $0003           | This memory range is non-volatile and read/write-able             |                 |    Y     |
 
 # Credits
 
