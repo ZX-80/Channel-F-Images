@@ -35,7 +35,7 @@ To solve these issues, the `.chf` file format needs to provide the necessary inf
 
 # File Header
 
-The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. The header is zero-padded to be 16-byte aligned. Extra data can be included by extending the *file header length* beyond the Videocart name, as this will always be ignored.
+The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. Extra data can be included by extending the *file header length* beyond the Videocart name, as this will always be ignored.
 
 <div align = "center">
   <img width="43%" src="https://user-images.githubusercontent.com/44975876/164077423-d5c0acfc-75c8-4dc4-b2a9-409ef7bb985e.png">
@@ -43,15 +43,15 @@ The file header contains basic information on the Videocart (name/hardware), as 
   *Placeholder*
 </div>
 
-| Name                    | Length (bytes) | Address | Description                                                  |
-| ----------------------- | -------------- | ------- | ------------------------------------------------------------ |
-| Cartridge signature     | 16             | \$0000  | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
-| File header length      | 4              | \$0010  |                                                              |
-| Cartridge Version       | 2              | \$0014  | The version of the file format being used. Typically `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Cartridge Hardware type | 2              | \$0016  | The hardware that's used                                     |
-| Reserved for future use | 8              | \$0018  |                                                              |
-| Videocart name length   | 1              | \$0020  | Allows a length of 1 - 256                                   |
-| Videocart name          | 1 - 256        | \$0021  |                                                              |
+| Name                    | Address | Length (bytes) | Comments                                                     |
+| ----------------------- | ------- | -------------- | ------------------------------------------------------------ |
+| Cartridge signature     | \$0000  | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
+| File header length      | \$0010  | 4              | `$xxxxxxx0` as the header is zero-padded to be 16-byte aligned |
+| Cartridge Version       | \$0014  | 2              | The version of the file format being used. Typically v1.00. Implementations should refuse to run games with major version numbers unknown by them. |
+| Cartridge Hardware type | \$0016  | 2              | Described below                                              |
+| Reserved for future use | \$0018  | 8              |                                                              |
+| Videocart name length   | \$0020  | 1              | Allows a length of 1 - 256                                   |
+| Videocart name          | \$0021  | 1 - 256        |                                                              |
 
 ### Designated Hardware type
 
@@ -98,17 +98,17 @@ The packet header contains basic information on how the expected hardware is acc
 | Chip type               | 2              | Described below                                              |
 | Bank number             | 2              | Used for banking. Always `$0000` when no banking scheme is used |
 | Starting load address   | 2              | Where the memory region starts                               |
-| Image size in bytes     | 2              | The size of the memory region                                |
+| Memory size in bytes    | 2              | The size of the memory region                                |
 | Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
 
 ### Designated Chip Types
 
-| Name          | Chip Type Value | Mapping | Comments                                                     | Typical Range | Has data |
-| ------------- | --------------- | ------- | ------------------------------------------------------------ | ------- | :--: |
-| ROM           | $0000           | Memory  | This memory range is Read-only                               | \$0800 - \$FFFF | Y |
-| 8-bit RAM     | $0001           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
-| LED           | $0002           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 | Y |
-| NVRAM         | $0003           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
+| Name          | Chip Type Value | Mapping | Comments                                                          | Typical Range   | Has data |
+| ------------- | --------------- | ------- | ----------------------------------------------------------------- | --------------- | :------: |
+| ROM           | $0000           | Memory  | This memory range is Read-only                                    | \$0800 - \$FFFF |    Y     |
+| 8-bit RAM     | $0001           | Memory  | This memory range is read/write-able                              | \$2800 - \$3000 |          |
+| LED           | $0002           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 |    Y     |
+| NVRAM         | $0003           | Memory  | This memory range is non-volatile and read/write-able             |                 |    Y     |
 
 # Credits
 
