@@ -12,15 +12,15 @@ class Packet:
         self.chip_type = chip_type
         self.bank_number = bank_number
         self.load_address = load_address
-        self.image_size = image_size
+        self.memory_size = image_size
         self.data = data
         
 class ChfData:
-    def __init__(self, hardware_type: uint16, version: float, name: str, author: str, packets: list[Packet]) -> None:
+    def __init__(self, hardware_type: uint16, version: float, name: str, extra: str, packets: list[Packet]) -> None:
         self.hardware_type = hardware_type
         self.version = version
         self.name = name
-        self.author = author
+        self.extra = extra
         self.packets = packets
 
 def generate_chf(chf_data: ChfData) -> None:
@@ -38,8 +38,7 @@ if __name__ == "__main__":
     print("      LED 0x3800 - 0x4000                ;2K")
     print(" 2) Homebrew (Example)")
     print("      ROM 0x0800 - 0x2000                ;6K")
-    print("     FRAM 0x2000 - 0x2800                ;2K")
-    print("     SRAM 0x2800 - 0x3000                ;2K")
+    print("     FRAM 0x2800 - 0x3000                ;2K")
     print("      ROM 0x3000 - 0xFFFF                ;50K")
     print("      I/O Ports: SRAM, Random, 3853 SMI")
     input("Which preset [0-2]: ")
@@ -47,9 +46,5 @@ if __name__ == "__main__":
     
     if chf_data.name == None:
         chf_data.name = input("Enter Videocart name: ")
-    if chf_data.author == None:
-        chf_data.author = input("Enter Videocart author: ")
-    if chf_data.version == None:
-        chf_data.version = float(input("Enter Videocart version: "))
 
     generate_chf(chf_data)
