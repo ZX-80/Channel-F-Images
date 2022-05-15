@@ -2,7 +2,7 @@
 
 # The Channel F Cartridge Image Format (.chf)
  
-![badge](https://badgen.net/badge/version/v0.4/orange?style=flat-square)
+![badge](https://badgen.net/badge/version/v0.5/orange?style=flat-square)
 
 A file format to store games made for the Fairchild Channel F. Based on the [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator.
 
@@ -32,7 +32,7 @@ To solve these issues, the `.chf` file format needs to provide the necessary inf
 
 # File Header
 
-The file header contains basic information on the Videocart (name/author/version), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section.
+The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. The header is zero-padded to be 16-byte aligned.
 
 <div align = "center">
   <img width="43%" src="https://user-images.githubusercontent.com/44975876/164077423-d5c0acfc-75c8-4dc4-b2a9-409ef7bb985e.png">
@@ -40,24 +40,31 @@ The file header contains basic information on the Videocart (name/author/version
   *Placeholder*
 </div>
 
-| Name                    | Length (bytes) | Description                                                  |
-| ----------------------- | -------------- | ------------------------------------------------------------ |
-| Cartridge signature     | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
-| File header length      | 4              |                                                              |
-| Cartridge Version       | 2              | The version of the file format being used. Typically `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Cartridge Hardware type | 2              | The banking scheme that's used                               |
-| Reserved for future use | 8              |                                                              |
-| Videocart version       | 2              | The game version major/minor (e.g. maze ver 3.2 = `$02 $03`) |
-| Videocart name length   | 1              | Allows a length of 1 - 256                                   |
-| Videocart name          | 1 - 256        |                                                              |
-| Videocart author length | 1              | Allows a length of 1 - 256                                   |
-| Videocart author        | 1 - 256        |                                                              |
+| Name                    | Length (bytes) | Address | Description                                                  |
+| ----------------------- | -------------- | ------- | ------------------------------------------------------------ |
+| Cartridge signature     | 16             | \$0000  | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
+| File header length      | 4              | \$0010  |                                                              |
+| Cartridge Version       | 2              | \$0014  | The version of the file format being used. Typically `$00 $01` = Ver 01.00. Implementations should refuse to run games with major version numbers unknown by them. |
+| Cartridge Hardware type | 2              | \$0016  | The hardware that's used                                     |
+| Reserved for future use | 8              | \$0018  |                                                              |
+| Videocart name length   | 1              | \$0020  | Allows a length of 1 - 256                                   |
+| Videocart name          | 1 - 256        | \$0021  |                                                              |
 
 **Designated Hardware type**
 
-| Name                    | Hardware Type Value | Description                                                  |
-| ----------------------- | -------------- | ------------------------------------------------------------ |
-| Normal                  | \$0000         | No banking                                                   |
+| Name                    | Hardware Type Value | Memory-mapped | Port-mapped | Comments |
+| ----------------------- | ------------------- | ------------- | ----------- | -------- |
+| Videocarts              | \$0000              | ROM           |             | Used by all Videocarts except 10, 18, and 20 (SABA) |
+| Videocarts 10 / 18      | \$0001              | ROM           | 2102 SRAM   |          |
+| ROM+RAM (With 3853)     | \$0002              | ROM, RAM      | 3853 SMI    |          |
+| SABA Videoplay 20       | \$0003              | ROM, RAM, LED | 3853 SMI    |          |
+| Multi-Cart              | \$0004              | ROM, FRAM     | 3853 SMI    | Has selectable banking |
+| Flashcart               | \$0005              | All           | All         |          |
+
+
+
+
+
 
 
 # Packet Overview
