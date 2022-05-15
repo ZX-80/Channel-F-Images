@@ -53,7 +53,7 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | Videocart name length   | 1              | \$0020  | Allows a length of 1 - 256                                   |
 | Videocart name          | 1 - 256        | \$0021  |                                                              |
 
-**Designated Hardware type**
+### Designated Hardware type
 
 | Name                    | Hardware Type Value | Memory-mapped | Port-mapped | Comments |
 | ----------------------- | ------------------- | ------------- | ----------- | -------- |
@@ -64,9 +64,14 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | Multi-Cart              | \$0004              | ROM, FRAM     | 3853 SMI    | Has selectable banking |
 | Flashcart               | \$0005              | All           | All         |          |
 
+### Supported I/O Port Devices
 
-
-
+| Name                                  | Port(s)   | Comments                                                  |
+| ------------------------------------- | --------- | --------------------------------------------------------- |
+| 2102 SRAM                             | 0x18/0x19 | 1-bit RAM. Ports described [here](http://seanriddle.com/mazepat.asm) |
+| Programmable interrupt vector address | 0x0C/0x0D | From the 3853 SMI IC                                      |
+| Programmable timer                    | 0x0E      | From the 3853 SMI IC                                      |
+| Interrupt control                     | 0x0F      | From the 3853 SMI IC                                      |
 
 
 
@@ -84,30 +89,26 @@ The packet header contains basic information on how the expected hardware is acc
   *Placeholder*
 </div>
 
-**Packets**
+### Packets
 
-| Name                    | Length (bytes) | Memory-mapped Description                                    | Port-mapped Description |
-| ----------------------- | -------------- | ------------------------------------------------------------ | ----------------------- |
-| Signature               | 4              | `CHIP`. Used to detect a valid file.                         | Same as Memory-mapped   |
-| Total packet length     | 4              | Header + Data(only some chip types)                          | Same as Memory-mapped   |
-| Chip type               | 2              | Described below                                              | Same as Memory-mapped   |
-| Bank number             | 2              | Used for banking. Always `$0000` for a normal hardware type  | Same as Memory-mapped   |
-| Starting load address   | 2              | Where the memory region starts                               | Always `$0000`          |
-| Image size in bytes     | 2              | The size of the memory region                                | The amount of ports used (1 - 256) |
-| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF | A list of port addresses |
+| Name                    | Length (bytes) | Memory-mapped Description                                    |
+| ----------------------- | -------------- | ------------------------------------------------------------ |
+| Signature               | 4              | `CHIP`. Used to detect a valid file.                         |
+| Total packet length     | 4              | Header + Data(only some chip types)                          |
+| Chip type               | 2              | Described below                                              |
+| Bank number             | 2              | Used for banking. Always `$0000` when no banking scheme is used |
+| Starting load address   | 2              | Where the memory region starts                               |
+| Image size in bytes     | 2              | The size of the memory region                                |
+| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
 
-**Designated Chip Types**
+### Designated Chip Types
 
-| Name          | Chip Type Value | Mapping | Comments                                                     | Typical Range/Port | Has data |
-| ------------- | --------------- | ------- | ------------------------------------------------------------ | ------- | -- |
+| Name          | Chip Type Value | Mapping | Comments                                                     | Typical Range | Has data |
+| ------------- | --------------- | ------- | ------------------------------------------------------------ | ------- | :--: |
 | ROM           | $0000           | Memory  | This memory range is Read-only                               | \$0800 - \$FFFF | Y |
 | 8-bit RAM     | $0001           | Memory  | This memory range is read/write-able  | \$2800 - \$3000 | |
 | LED           | $0002           | Memory  | Similar to ROM, but writing to this memory range toggles the LED  | \$3800 - \$4000 | Y |
 | NVRAM         | $0003           | Memory  | This memory range is non-volatile and read/write-able        | | Y |
-| 1-bit RAM     | $0004           | Port    | Ports described [here](http://seanriddle.com/mazepat.asm)    | 0x18/0x19 | |
-| Programmable interrupt vector address    | $0005           | Port    | From the 3853 SMI IC              | 0x0C/0x0D | |
-| Programmable timer    | $0006           | Port    | From the 3853 SMI IC                                 | 0x0E | |
-| Interrupt control    | $0007           | Port    | From the 3853 SMI IC                                  | 0x0F | |
 
 # Credits
 
