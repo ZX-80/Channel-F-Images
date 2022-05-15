@@ -99,7 +99,7 @@ The packet header contains basic information on how the expected hardware is acc
 | Bank number             | 2              | Used for banking. Always `$0000` when no banking scheme is used |
 | Starting load address   | 2              | Where the memory region starts                               |
 | Memory size in bytes    | 2              | The size of the memory region                                |
-| Data                    | 1 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
+| Data                    | 0 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
 
 ### Designated Chip Types
 
