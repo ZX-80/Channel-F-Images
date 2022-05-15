@@ -8,9 +8,12 @@ A file format to store games made for the Fairchild Channel F. Based on the [Car
 
   
 <div align = "center">
-  <img width="43%" src="https://user-images.githubusercontent.com/44975876/164077423-d5c0acfc-75c8-4dc4-b2a9-409ef7bb985e.png">
  
-  *Placeholder*
+  <img width="563" alt="image" src="https://user-images.githubusercontent.com/44975876/168489152-900b3204-42b1-4325-b72c-ad9df8860520.png">
+
+
+ 
+  *Art by Rossil Fuel*
 </div>
   
 [File Overview](#file-overview) •
@@ -26,13 +29,13 @@ A file format to store games made for the Fairchild Channel F. Based on the [Car
 The `.chf` file format was created to solve three major issues:
 - Confusion caused by multiple undocumented `.bin` formats. Detecting different banking schemes can be difficult or sometimes even impossible
 - Simplify feature detection for emulators/flashcarts (such as the expected presence of SRAM). Currently SRAM is provided if a Videocart attempts to write to memory. But this method can cause issues if a bug writes to the ROM area
-- `.bin` files contain no information on the games title / author
+- `.bin` files contain no information on the games themselves
 
-To solve these issues, the `.chf` file format needs to provide the necessary information, while also being future proof in the event of new hardware/banking schemes. The [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator was used as inspiration, as it had similar goals. Note this file format is little-endian, as that is what arduino/x86/RP2040 architectures all use.
+To solve these issues, the `.chf` file format needs to provide the necessary information, while also being future proof in the event of new hardware/banking schemes. The [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator was used as inspiration, as it had similar goals. Note this file format is little-endian to simplify use by arduino/x86/RP2040 architectures.
 
 # File Header
 
-The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. The header is zero-padded to be 16-byte aligned.
+The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. The header is zero-padded to be 16-byte aligned. Extra data can be included by extending the *file header length* beyond the Videocart name, as this will always be ignored.
 
 <div align = "center">
   <img width="43%" src="https://user-images.githubusercontent.com/44975876/164077423-d5c0acfc-75c8-4dc4-b2a9-409ef7bb985e.png">
@@ -54,7 +57,7 @@ The file header contains basic information on the Videocart (name/hardware), as 
 
 | Name                    | Hardware Type Value | Memory-mapped | Port-mapped | Comments |
 | ----------------------- | ------------------- | ------------- | ----------- | -------- |
-| Videocarts              | \$0000              | ROM           |             | Used by all Videocarts except 10, 18, and 20 (SABA) |
+| Videocart               | \$0000              | ROM           |             | Used by all Videocarts except 10, 18, and 20 (SABA) |
 | Videocarts 10 / 18      | \$0001              | ROM           | 2102 SRAM   |          |
 | ROM+RAM (With 3853)     | \$0002              | ROM, RAM      | 3853 SMI    |          |
 | SABA Videoplay 20       | \$0003              | ROM, RAM, LED | 3853 SMI    |          |
