@@ -2,7 +2,7 @@
 
 # The Channel F Cartridge Image Format (.chf)
  
-![badge](https://badgen.net/badge/version/v0.5/orange?style=flat-square)
+![badge](https://badgen.net/badge/version/v1.0/orange?style=flat-square)
 
 A file format to store games made for the Fairchild Channel F. Based on the [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator.
 
@@ -26,6 +26,9 @@ A file format to store games made for the Fairchild Channel F. Based on the [Car
 
 # File Overview
 
+> mention the cartridge name is inside the file (like tags in various media files) so no matter what the system filename is the title is included anyway (unless stripped). 
+> mention that the file is unique and can be double clicked and MESS/MAME/whatever will open it with no fuss.
+
 The `.chf` file format was created to solve three major issues:
 - Confusion caused by multiple undocumented `.bin` formats. Detecting different banking schemes can be difficult or sometimes even impossible
 - Simplify feature detection for emulators/flashcarts (such as the expected presence of SRAM). Currently SRAM is provided if a Videocart attempts to write to memory. But this method can cause issues if a bug writes to the ROM area
@@ -47,8 +50,8 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | ----------------------- | ------- | -------------- | ------------------------------------------------------------ |
 | Cartridge signature     | \$0000  | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
 | File header length      | \$0010  | 4              | `$xxxxxxx0` as the header is zero-padded to be 16-byte aligned |
-| Cartridge Version       | \$0014  | 2              | The version of the file format being used. Typically v1.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Cartridge Hardware type | \$0016  | 2              | Described below                                              |
+| File format version       | \$0014  | 2              | The version of the file format being used. Typically v1.00. Implementations should refuse to run games with major version numbers unknown by them. |
+| Cartridge hardware type | \$0016  | 2              | Described below                                              |
 | Reserved for future use | \$0018  | 8              |                                                              |
 | Videocart name length   | \$0020  | 1              | Allows a length of 1 - 256                                   |
 | Videocart name          | \$0021  | 1 - 256        |                                                              |
@@ -61,7 +64,7 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | Videocarts 10 / 18      | \$0001              | ROM           | 2102 SRAM   |          |
 | ROM+RAM (With 3853)     | \$0002              | ROM, RAM      | 3853 SMI    |          |
 | SABA Videoplay 20       | \$0003              | ROM, RAM, LED | 3853 SMI    |          |
-| Multi-Cart              | \$0004              | ROM, FRAM     | 3853 SMI    | Has selectable banking |
+| Multi-Cart              | \$0004              | ROM, RAM      | 3853 SMI    | Has selectable banking |
 | Flashcart               | \$0005              | All           | All         |          |
 
 ### Supported I/O Port Devices
