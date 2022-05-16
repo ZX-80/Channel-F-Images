@@ -26,15 +26,12 @@ A file format to store games made for the Fairchild Channel F. Based on the [Car
 
 # File Overview
 
-> mention the cartridge name is inside the file (like tags in various media files) so no matter what the system filename is the title is included anyway (unless stripped). 
-> mention that the file is unique and can be double clicked and MESS/MAME/whatever will open it with no fuss.
-
 The `.chf` file format was created to solve three major issues:
 - Confusion caused by multiple undocumented `.bin` formats. Detecting different banking schemes can be difficult or sometimes even impossible
 - Simplify feature detection for emulators/flashcarts (such as the expected presence of SRAM). Currently SRAM is provided if a Videocart attempts to write to memory. But this method can cause issues if a bug writes to the ROM area
 - `.bin` files contain no information on the games themselves
 
-To solve these issues, the `.chf` file format needs to provide the necessary information, while also being future proof in the event of new hardware/banking schemes. The [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator was used as inspiration, as it had similar goals. Note this file format is little-endian to simplify use by arduino/x86/RP2040 architectures.
+To solve these issues, the `.chf` file format needs to provide the necessary information, while also being future proof in the event of new hardware/banking schemes. The [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator was used as inspiration, as it had similar goals. Note this file format is little-endian to simplify use by arduino/x86/RP2040 architectures. Some other advantages to a custom format are that it can be associated with MESS/MAME/etc to open with no fuss (since the `.chf` extension is unique), and that the title is always available regardless of the system filename (since it's stored in the file metadata like tags in various media files).
 
 # File Header
 
