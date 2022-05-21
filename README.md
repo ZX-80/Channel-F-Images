@@ -68,6 +68,8 @@ The file header contains basic information on the Videocart (name/hardware), as 
 
 | Name                                  | Port(s)   | Comments                                                  |
 | ------------------------------------- | --------- | --------------------------------------------------------- |
+| Interrupt control                     | 0x06      | From the MK 3870/3871 IC                                  |
+| Binary Timer                          | 0x07      | From the MK 3870/3871 IC                                  |
 | 2102 SRAM                             | 0x18/0x19 | 1-bit RAM. Ports described [here](http://seanriddle.com/mazepat.asm) |
 | Programmable interrupt vector address | 0x0C/0x0D | From the 3853 SMI IC                                      |
 | Programmable timer                    | 0x0E      | From the 3853 SMI IC                                      |
