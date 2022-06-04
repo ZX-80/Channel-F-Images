@@ -34,9 +34,9 @@ To solve these issues, the `.chf` file format needs to provide the necessary inf
 The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. Extra data can be included by extending the *file header length* beyond the Videocart name, as this will always be ignored.
 
 <div align = "center">
-  <img width="512" src="https://user-images.githubusercontent.com/44975876/172022201-1df9b5e0-778a-47a3-8985-9ccf51669aae.png">
+  <img width="512" src="https://user-images.githubusercontent.com/44975876/172023092-1b55e73f-94f1-464b-bec8-7630d5358570.png">
 
-  *A chf file (v1.0) storing a ROM+RAM Videocart called "3D MONSTER MAZE"*
+  *A `.chf` file storing a ROM+RAM Videocart called "3D MONSTER MAZE"*
 </div>
 
 | Name                    | Address | Length (bytes) | Comments                                                     |
@@ -82,8 +82,8 @@ Packets serve as hardware descriptors, providing information on what hardware th
 The packet header contains basic information on how the expected hardware is accessed.
 
 <div align = "center">
-  <img width="512" src="https://user-images.githubusercontent.com/44975876/172022076-f17a8110-375c-4299-817a-fb7879d00ad5.png">
- 
+  <img width="512" src="https://user-images.githubusercontent.com/44975876/172023103-309797bd-a0e2-4caa-ae79-497148057ab7.png">
+
   *A ROM chip packet (with data) at \$2000 - \$2800*
 </div>
 
