@@ -5,13 +5,9 @@
 ![badge](https://badgen.net/badge/version/v1.0/orange?style=flat-square)
 
 A file format to store games made for the Fairchild Channel F. Based on the [Cartridge Image](http://unusedino.de/ec64/technical/formats/crt.html) format from the CCS64 emulator.
-
   
 <div align = "center">
- 
   <img width="563" alt="image" src="https://user-images.githubusercontent.com/44975876/168489152-900b3204-42b1-4325-b72c-ad9df8860520.png">
-
-
  
   *Art by Rossil Fuel*
 </div>
@@ -38,9 +34,9 @@ To solve these issues, the `.chf` file format needs to provide the necessary inf
 The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. Extra data can be included by extending the *file header length* beyond the Videocart name, as this will always be ignored.
 
 <div align = "center">
-  <img width="43%" src="https://user-images.githubusercontent.com/44975876/164077423-d5c0acfc-75c8-4dc4-b2a9-409ef7bb985e.png">
- 
-  *Placeholder*
+  <img width="512" src="https://user-images.githubusercontent.com/44975876/172022201-1df9b5e0-778a-47a3-8985-9ccf51669aae.png">
+
+  *A chf file (v1.0) storing a ROM+RAM Videocart called "3D MONSTER MAZE"*
 </div>
 
 | Name                    | Address | Length (bytes) | Comments                                                     |
@@ -86,9 +82,9 @@ Packets serve as hardware descriptors, providing information on what hardware th
 The packet header contains basic information on how the expected hardware is accessed.
 
 <div align = "center">
-  <img width="43%" src="https://user-images.githubusercontent.com/44975876/164077423-d5c0acfc-75c8-4dc4-b2a9-409ef7bb985e.png">
+  <img width="512" src="https://user-images.githubusercontent.com/44975876/172022076-f17a8110-375c-4299-817a-fb7879d00ad5.png">
  
-  *Placeholder*
+  *A ROM chip packet (with data) at \$2000 - \$2800*
 </div>
 
 ### Packets
