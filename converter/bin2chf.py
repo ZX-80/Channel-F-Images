@@ -10,13 +10,16 @@ import pathlib
 import functools
 import sys
 
+from io import BufferedWriter
+from typing_extensions import TypeAlias
+
 HARDWARE_TYPE_LIMIT = 5
 PROGRAM_NAME = "bin2chf"
 PROGRAM_VERSION = "1.0"
 
-uint8 = int
-uint16 = int
-uint32 = int
+uint8: TypeAlias = int
+uint16: TypeAlias = int
+uint32: TypeAlias = int
 
 class Packet:
     ROM = 0
@@ -54,8 +57,7 @@ class ChfData:
 #      -n
 #      -v
 
-if __name__ == "__main__":
-
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog=PROGRAM_NAME, description="Convert .bin files to .chf files.")
 
     parser.add_argument(
@@ -129,21 +131,18 @@ if __name__ == "__main__":
         action="append",
         help="designates a range of memory as NVRAM",
     )
-
     parser.add_argument(
         "-y",
         "--yes",
         action="store_true",
         help="overwrite output files without asking",
     )
-    
     parser.add_argument(
         "-n",
         "--no",
         action="store_true",
         help="do not overwrite output files, and exit immediately if a specified output file already exists",
     )
-    
     parser.add_argument(
         "-v",
         "--version",
@@ -151,38 +150,45 @@ if __name__ == "__main__":
         version=f"%(prog)s {PROGRAM_VERSION}"
     )
 
-    args = parser.parse_args()
-    print(f"\nDEBUG 1: {args}\n")
+    return parser.parse_args()
 
-    # Handle infile
+def validate_and_fetch_infile() -> bytes:
     if args.infile.suffix != ".bin":
         sys.exit(f"[ERROR] \"{args.infile}\" is not a .bin file")
     if not args.infile.is_file():
         sys.exit(f"[ERROR] \"{args.infile}\" does not exist")
     try:
         with open(args.infile, mode='rb') as infile_fp:
-            infile_data = infile_fp.read()
+            return infile_fp.read()
     except OSError:
         sys.exit(f"[ERROR] File \"{args.infile}\" could not be opened/read")
 
-    # Handle outfile
+def validate_and_fetch_outfile() -> BufferedWriter:
     if args.outfile is None: # No output filename given
         args.outfile = pathlib.Path(args.infile.stem).with_suffix('.chf')
-    if args.outfile.exists(): # outfile already exists
-        if not args.yes and not args.no: # prompt user
+    if args.outfile.exists(): # Outfile already exists
+        response = 'y'
+        if not args.yes and not args.no: # Prompt user
             response = input(f"File {args.outfile} already exists. Overwrite? [y/N] ")
-            if response != 'y':
-                sys.exit(f"[ERROR] \"{args.outfile}\" already exists")
-            else:
-                print(f"[WARNING] Overwriting \"{args.outfile}\"")
-        elif args.no: # exit if file exists
+        if args.no or response != 'y':
             sys.exit(f"[ERROR] \"{args.outfile}\" already exists")
-        elif args.yes: # continue if file exists
-            print(f"[WARNING] Overwriting \"{args.outfile}\"")
+        else:
+            print(f"[WARNING] Overwriting \"{args.outfile}\"")    
     try:
-        outfile_fp = open(args.outfile, "wb")
+        return open(args.outfile, "wb")
     except OSError:
-        sys.exit(f"[ERROR] File \"{args.outfile}\" could not be opened/read")
+        sys.exit(f"[ERROR] File \"{args.outfile}\" could not be opened/written")
+
+if __name__ == "__main__":
+
+    args = parse_args()
+    print(f"\nDEBUG 1: {args}\n")
+
+    # Handle infile
+    infile_data = validate_and_fetch_infile()
+
+    # Handle outfile
+    outfile_fp = validate_and_fetch_outfile()
 
     # Handle title
     if args.title is None:
@@ -222,7 +228,7 @@ if __name__ == "__main__":
         if len(packets) > 0:
             # Validate packet ranges
             for packet in packets:
-                arg_text = "--" + {0:"rom", 1:"ram", 2:"led", 3:"nvram"}[packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
+                arg_text = "--" + ["rom", "ram", "led", "nvram"][packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
                 if not 0x800 <= packet.load_address <= 0xffff:
                     sys.exit(f"[ERROR] Load address \"{hex(packet.load_address)}\" in \"{arg_text}\" is invalid. Must be between 0x0800 & 0xffff")
                 if not 1 <= packet.image_size <= 0xf800:
@@ -236,8 +242,8 @@ if __name__ == "__main__":
             prev_packet = packets[0]
             for packet in packets[1:]:
                 if packet.load_address < prev_packet.load_address + prev_packet.image_size:
-                    prev_arg_text = "--" + {0:"rom", 1:"ram", 2:"led", 3:"nvram"}[prev_packet.chip_type] + " " + hex(prev_packet.load_address) + " " + hex(prev_packet.image_size)
-                    arg_text = "--" + {0:"rom", 1:"ram", 2:"led", 3:"nvram"}[packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
+                    prev_arg_text = "--" + ["rom", "ram", "led", "nvram"][prev_packet.chip_type] + " " + hex(prev_packet.load_address) + " " + hex(prev_packet.image_size)
+                    arg_text = "--" + ["rom", "ram", "led", "nvram"][packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
                     sys.exit(f"[ERROR] packet {arg_text} overlaps packet {prev_arg_text}")
                 prev_packet = packet
 
