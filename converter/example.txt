@@ -1,0 +1,16 @@
+# Lines starting with # are comments
+
+# Set the title and filename
+--title "Oils Well"
+--output oilswell.chf
+
+# Set the hardware type to "Flashcart"
+--hardwaretype 5
+
+# Define a simple memory map with 60K of ROM & 2K of RAM
+--rom 0x0800 0x2000
+--ram 0x2800 2048
+--rom 0x3000 0xC800
+
+# This file can be used like so
+# bin2chf in.bin --config example.txt
