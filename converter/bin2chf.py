@@ -13,7 +13,6 @@ import sys
 from io import BufferedWriter
 from typing_extensions import TypeAlias
 
-HARDWARE_TYPE_LIMIT = 5
 PROGRAM_NAME = "bin2chf"
 PROGRAM_VERSION = "1.0"
 
@@ -41,21 +40,54 @@ class ChfData:
         self.extra = extra
         self.packets = packets
 
-# conv filein.bin fileout.crt -hardwaretype 2 -title "GAMENAME"
-# conv in.bin
-#      -o out.chf
-#      -hardwaretype 5
-#      -title "Oils Well"
-#
-#      -rom 0x0800 0x2000
-#      -ram 0x2800 0x800
-#      -rom 0x3000 0xC800
-#
-#      -config example.ini
-#
-#      -y
-#      -n
-#      -v
+class HardwareType:
+    def __init__(self, designation_id: uint16, packets: list[Packet], manual_memory_map: bool = False) -> None:
+        self.designation_id = designation_id # 2
+        self.packets = packets # packets layout
+        self.manual_memory_map = manual_memory_map # supports manual memory maps
+
+hardware_type_list = [
+    HardwareType(
+        0,
+        [
+            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0xF800)
+        ]
+    ),
+    HardwareType(
+        1,
+        [
+            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0xF800)
+        ]
+    ),
+    HardwareType(
+        2,
+        [
+            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0x2000),
+            Packet(chip_type=Packet.RAM, load_address=0x2800, image_size=0x800),
+            Packet(chip_type=Packet.ROM, load_address=0x3000, image_size=0xC800),
+        ]
+    ),
+    HardwareType(
+        3,
+        [
+            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0x2000),
+            Packet(chip_type=Packet.RAM, load_address=0x2800, image_size=0x800),
+            Packet(chip_type=Packet.ROM, load_address=0x3000, image_size=0x800),
+            Packet(chip_type=Packet.LED, load_address=0x3800, image_size=0x800),
+            Packet(chip_type=Packet.ROM, load_address=0x4000, image_size=0xB800),
+        ]
+    ),
+    HardwareType(4, []),
+    HardwareType(
+        5,
+        [
+            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0x2000),
+            Packet(chip_type=Packet.RAM, load_address=0x2800, image_size=0x800),
+            Packet(chip_type=Packet.ROM, load_address=0x3000, image_size=0xC800),
+        ],
+        True
+    ),
+]
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog=PROGRAM_NAME, description="Convert .bin files to .chf files.")
@@ -81,7 +113,7 @@ def parse_args() -> argparse.Namespace:
         "-ht",
         "--hardwaretype",
         type=int,
-        choices=list(range(HARDWARE_TYPE_LIMIT + 1)),
+        choices=list(range(len(hardware_type_list) + 1)),
         default=2,
         help="described below",
     )
@@ -95,7 +127,7 @@ def parse_args() -> argparse.Namespace:
         "-ram",
         "--ram",
         nargs=2,
-        metavar=("START", "END"),
+        metavar=("START", "SIZE"),
         type=functools.partial(int, base=0),
         default=[],
         action="append",
@@ -105,7 +137,7 @@ def parse_args() -> argparse.Namespace:
         "-rom",
         "--rom",
         nargs=2,
-        metavar=("START", "END"),
+        metavar=("START", "SIZE"),
         type=functools.partial(int, base=0),
         default=[],
         action="append",
@@ -115,7 +147,7 @@ def parse_args() -> argparse.Namespace:
         "-led",
         "--led",
         nargs=2,
-        metavar=("START", "END"),
+        metavar=("START", "SIZE"),
         type=functools.partial(int, base=0),
         default=[],
         action="append",
@@ -125,7 +157,7 @@ def parse_args() -> argparse.Namespace:
         "-nvram",
         "--nvram",
         nargs=2,
-        metavar=("START", "END"),
+        metavar=("START", "SIZE"),
         type=functools.partial(int, base=0),
         default=[],
         action="append",
@@ -179,6 +211,41 @@ def validate_and_fetch_outfile() -> BufferedWriter:
     except OSError:
         sys.exit(f"[ERROR] File \"{args.outfile}\" could not be opened/written")
 
+def get_manual_memory_map() -> list[Packet]:
+    packets = hardware_type_list[args.hardwaretype].packets 
+    if len(args.rom + args.ram + args.led + args.nvram) != 0: # Memory map provided by user
+        if hardware_type_list[args.hardwaretype].manual_memory_map:
+            packets = []
+            chip_type = 0
+            for provided_ranges in [args.rom, args.ram, args.led, args.nvram]:
+                for start, size in provided_ranges:
+                    packets.append(Packet(chip_type=chip_type, load_address=start, image_size=size))
+                chip_type += 1
+
+            if len(packets) > 0:
+                # Validate packet ranges
+                for packet in packets:
+                    arg_text = "--" + ["rom", "ram", "led", "nvram"][packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
+                    if not 0x800 <= packet.load_address <= 0xffff:
+                        sys.exit(f"[ERROR] Load address \"{hex(packet.load_address)}\" in \"{arg_text}\" is invalid. Must be between 0x0800 & 0xffff")
+                    if not 1 <= packet.image_size <= 0xf800:
+                        sys.exit(f"[ERROR] Size \"{hex(packet.image_size)}\" in \"{arg_text}\" is invalid. Must be between 0x0001 & 0xf800")
+                    if packet.load_address + packet.image_size > 0x10000:
+                        sys.exit(f"[ERROR] \"{arg_text}\" ranges from {hex(packet.load_address)} to {hex(packet.load_address + packet.image_size - 1)} which exceeds 0xFFFF")
+
+                # Check for overlapping packets      
+                packets = sorted(packets, key=lambda packet: packet.load_address)
+                prev_packet = packets[0]
+                for packet in packets[1:]:
+                    if packet.load_address < prev_packet.load_address + prev_packet.image_size:
+                        prev_arg_text = "--" + ["rom", "ram", "led", "nvram"][prev_packet.chip_type] + " " + hex(prev_packet.load_address) + " " + hex(prev_packet.image_size)
+                        arg_text = "--" + ["rom", "ram", "led", "nvram"][packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
+                        sys.exit(f"[ERROR] packet {arg_text} overlaps packet {prev_arg_text}")
+                    prev_packet = packet
+        else:
+            print("[WARNING] hardware type doesn't support manual memory map")
+    return packets
+
 if __name__ == "__main__":
 
     args = parse_args()
@@ -195,57 +262,7 @@ if __name__ == "__main__":
         args.title = args.infile.stem
 
     # Handle memory map
-    memory_map_provided = len(args.rom + args.ram + args.led + args.nvram) != 0
-    if memory_map_provided and args.hardwaretype != 5:
-        print("[WARNING] hardware type doesn't support manual memory map")
-
-    if args.hardwaretype in [0, 1]:
-        packets = [
-            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0xF800)
-        ]
-    elif args.hardwaretype == 2 or (args.hardwaretype == 5 and not memory_map_provided):
-        packets = [
-            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0x2000),
-            Packet(chip_type=Packet.RAM, load_address=0x2800, image_size=0x800),
-            Packet(chip_type=Packet.ROM, load_address=0x3000, image_size=0xC800),
-        ]
-    elif args.hardwaretype == 3:
-        packets = [
-            Packet(chip_type=Packet.ROM, load_address=0x800, image_size=0x2000),
-            Packet(chip_type=Packet.RAM, load_address=0x2800, image_size=0x800),
-            Packet(chip_type=Packet.ROM, load_address=0x3000, image_size=0x800),
-            Packet(chip_type=Packet.LED, load_address=0x3800, image_size=0x800),
-            Packet(chip_type=Packet.ROM, load_address=0x4000, image_size=0xB800),
-        ]
-    elif args.hardwaretype == 5:
-        packets = []
-        chip_type = 0
-        for provided_ranges in [args.rom, args.ram, args.led, args.nvram]:
-            for start, size in provided_ranges:
-                packets.append(Packet(chip_type=chip_type, load_address=start, image_size=size))
-            chip_type += 1
-
-        if len(packets) > 0:
-            # Validate packet ranges
-            for packet in packets:
-                arg_text = "--" + ["rom", "ram", "led", "nvram"][packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
-                if not 0x800 <= packet.load_address <= 0xffff:
-                    sys.exit(f"[ERROR] Load address \"{hex(packet.load_address)}\" in \"{arg_text}\" is invalid. Must be between 0x0800 & 0xffff")
-                if not 1 <= packet.image_size <= 0xf800:
-                    sys.exit(f"[ERROR] Size \"{hex(packet.image_size)}\" in \"{arg_text}\" is invalid. Must be between 0x0001 & 0xf800")
-                if packet.load_address + packet.image_size > 0x10000:
-                    print(arg_text)
-                    sys.exit(f"[ERROR] \"{arg_text}\" ranges from {hex(packet.load_address)} to {hex(packet.load_address + packet.image_size - 1)} which exceeds 0xFFFF")
-
-            # Check for overlapping packets      
-            packets = sorted(packets, key=lambda packet: packet.load_address)
-            prev_packet = packets[0]
-            for packet in packets[1:]:
-                if packet.load_address < prev_packet.load_address + prev_packet.image_size:
-                    prev_arg_text = "--" + ["rom", "ram", "led", "nvram"][prev_packet.chip_type] + " " + hex(prev_packet.load_address) + " " + hex(prev_packet.image_size)
-                    arg_text = "--" + ["rom", "ram", "led", "nvram"][packet.chip_type] + " " + hex(packet.load_address) + " " + hex(packet.image_size)
-                    sys.exit(f"[ERROR] packet {arg_text} overlaps packet {prev_arg_text}")
-                prev_packet = packet
+    packets = get_manual_memory_map()
 
     # TODO: map data in .bin file to packets in packets list,
     # deleting/resizing packets as necessary
