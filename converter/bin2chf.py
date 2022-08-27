@@ -10,24 +10,27 @@ import pathlib
 import functools
 import sys
 
+from math import ceil
 from io import BufferedWriter
 from typing import TypeAlias
 
 PROGRAM_NAME = "bin2chf"
 PROGRAM_VERSION = "1.0"
+FORMAT_VERSION = "1.0"
 
 uint8: TypeAlias = int
 uint16: TypeAlias = int
 uint32: TypeAlias = int
 
 class ChipType:
-    def __init__(self, designation_id: uint16, string: str) -> None:
+    def __init__(self, designation_id: uint16, string: str, has_data: bool) -> None:
         self.designation_id = designation_id
         self.string = string.lower()
+        self.has_data = has_data
         setattr(ChipType, string.upper(), designation_id)
 
 class Packet:
-    def __init__(self, chip_type: uint16, load_address: uint16, image_size: uint16, data: list[uint8] = None, bank_number: uint16 = 0) -> None:
+    def __init__(self, chip_type: uint16, load_address: uint16, image_size: uint16, data: memoryview = None, bank_number: uint16 = 0) -> None:
         self.chip_type = chip_type
         self.bank_number = bank_number
         self.load_address = load_address
@@ -36,12 +39,12 @@ class Packet:
 
 class HardwareType:
     def __init__(self, designation_id: uint16, packets: list[Packet], manual_memory_map: bool = False) -> None:
-        self.designation_id = designation_id # 2
-        self.packets = packets # packets layout
-        self.manual_memory_map = manual_memory_map # supports manual memory maps
+        self.designation_id = designation_id
+        self.packets = packets
+        self.manual_memory_map = manual_memory_map
 
 class ChfData:
-    def __init__(self, hardware_type: uint16, version: float, title: str, extra: str, packets: list[Packet]) -> None:
+    def __init__(self, hardware_type: uint16, version: str, title: str, extra: str, packets: list[Packet]) -> None:
         self.hardware_type = hardware_type
         self.version = version
         self.title = title
@@ -49,10 +52,10 @@ class ChfData:
         self.packets = packets
 
 chip_type_list = [
-    ChipType(0, "ROM"),
-    ChipType(1, "RAM"),
-    ChipType(2, "LED"),
-    ChipType(3, "NVRAM"),
+    ChipType(0, "ROM", has_data=True),
+    ChipType(1, "RAM", has_data=False),
+    ChipType(2, "LED", has_data=True),
+    ChipType(3, "NVRAM", has_data=True),
 ]
 
 hardware_type_list = [
@@ -216,10 +219,8 @@ def get_memory_map() -> list[Packet]:
             for packet in packets:
                 if not 0x800 <= packet.load_address <= 0xffff:
                     sys.exit(f"[ERROR] Load address \"0x{packet.load_address:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x0800 & 0xffff")
-                if not 1 <= packet.image_size <= 0xf800:
-                    sys.exit(f"[ERROR] Size \"0x{packet.image_size:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x0001 & 0x{0x10000 - packet.load_address:x}")
-                if packet.load_address + packet.image_size > 0x10000:
-                    sys.exit(f"[ERROR] Packet \"{generate_arg_text(packet)}\" is out of bounds. Range 0x{packet.load_address:x} to 0x{packet.load_address + packet.image_size - 1:x} exceeds 0xffff")
+                if not 1 <= packet.image_size <= 0x10000 - packet.load_address:
+                    sys.exit(f"[ERROR] Size \"0x{packet.image_size:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x1 & 0x{0x10000 - packet.load_address:x}")
 
             # Check for overlapping packets
             packets = sorted(packets, key=lambda packet: packet.load_address)
@@ -229,6 +230,63 @@ def get_memory_map() -> list[Packet]:
         else:
             print("[WARNING] Hardware type doesn't support manual memory map")
     return packets
+
+def map_bin_to_packets(infile_data: bytes, packets: list[Packet]) -> list[Packet]:
+    infile_data = memoryview(infile_data) # Avoid unnecessary copying
+    valid_packets = []
+    for packet in packets:
+        if chip_type_list[packet.chip_type].has_data:
+            index = packet.load_address - 0x800
+            if index <= len(infile_data) - 1:
+                packet.data = infile_data[index:index + packet.image_size]
+                packet.image_size = len(packet.data)
+                valid_packets.append(packet)
+    return valid_packets
+
+def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) -> None:
+    try:
+        # Magic number: 16 bytes
+        fp.write("CHANNEL F       ".encode('utf-8'))
+
+        # File header length padded to be 16-byte aligned: 4 bytes
+        file_header_length = 16 + 4 + 2 + 2 + 8 + 1 + len(chf_data.title)
+        file_header_length = 16 * ceil(file_header_length / 16)
+        fp.write(file_header_length.to_bytes(4, 'little'))
+
+        # Format version: 2 bytes (Minor, Major)
+        version_major, version_minor = map(int, chf_data.version.split('.'))
+        fp.write(version_minor.to_bytes(1, 'little'))
+        fp.write(version_major.to_bytes(1, 'little'))
+
+        # Hardware type: 2 bytes
+        fp.write(chf_data.hardware_type.to_bytes(2, 'little'))
+
+        # Reserved: 8 bytes
+        fp.write((0).to_bytes(8, 'little'))
+
+        # Title length: 1 byte
+        fp.write((len(chf_data.title) - 1).to_bytes(1, 'little')) # XXX: is a simpler mapping better?
+
+        # Title: 1 - 256 bytes
+        fp.write(chf_data.title.encode('utf-8'))
+
+        # Padding: 0 - 15 bytes
+        fp.write((0).to_bytes(file_header_length - fp.tell(), 'little'))
+
+        # Packets
+        for packet in chf_data.packets:
+            fp.write("CHIP".encode('utf-8')) # Magic number: 4 bytes
+            packet_length = 4 + 4 + 2 + 2 + 2 + 2 + packet.image_size # Packet length: 4 bytes
+            fp.write(packet_length.to_bytes(4, 'little'))
+            fp.write(packet.chip_type.to_bytes(2, 'little')) # Chip type: 2 bytes
+            fp.write(packet.bank_number.to_bytes(2, 'little')) # Bank number: 2 bytes
+            fp.write(packet.load_address.to_bytes(2, 'little')) # Load address: 2 bytes
+            fp.write(packet.image_size.to_bytes(2, 'little')) # Data length: 2 bytes
+            fp.write(packet.data) # Chip type: 0 - 63,488 bytes  
+
+        fp.close()
+    except OSError:
+        sys.exit(f"[ERROR] File \"{outfile_name}\" could not be written")
 
 if __name__ == "__main__":
 
@@ -244,12 +302,15 @@ if __name__ == "__main__":
     # Handle title
     if args.title is None:
         args.title = args.infile.stem
+    if len(args.title) == 0:
+        args.title = 'out'
 
     # Handle memory map
     packets = get_memory_map()
 
-    # TODO: map data in .bin file to packets in packets list,
-    # deleting/resizing packets as necessary
+    packets = map_bin_to_packets(infile_data, packets)
+
+    chf_data = ChfData(args.hardwaretype, FORMAT_VERSION, args.title, None, packets)
     
     print("\nPackets:")
     for packet in packets:
@@ -259,5 +320,5 @@ if __name__ == "__main__":
 
     print(f"\nDEBUG 2: {args}\n")
     
-    # TODO: produce .chf file from ChfData object    
-        
+    create_chf_file(outfile_fp, chf_data, args.outfile)
+    print("Success")
