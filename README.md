@@ -36,7 +36,7 @@ The file header contains basic information on the Videocart (name/hardware), as 
 <div align = "center">
   <img width="512" src="https://user-images.githubusercontent.com/44975876/187803586-a0ab80d2-c46d-4230-840b-e178b76f97b2.png">
 
-  *A `.chf` file storing a ROM+RAM Videocart called "3D MONSTER MAZE"*
+  *A `.chf` file storing a ROM+RAM Videocart called "3D MONSTER MAZES"*
 </div>
 
 | Name                    | Address | Length (bytes) | Comments                                                     |
