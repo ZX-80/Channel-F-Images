@@ -84,7 +84,7 @@ C:\Windows\System32>
 
 ## Configuration
 
-For convenience, a config file can be created to store terminal arguments. The arguments will be run as if they were entered on the command line. It can then be used like so:
+For convenience, a config file can be created to store terminal arguments. The arguments will be run as if they were entered on the command line, but can be overridden if needed. It can then be used like so:
 
 `bin2chf game.bin --config example.txt`
 

@@ -3,7 +3,6 @@
 
 """Convert Channel F .bin files into .chf files"""
 
-# TODO: support a config file for command arguments
 # TODO: multi-cart support
 
 import argparse
