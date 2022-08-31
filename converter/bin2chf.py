@@ -10,6 +10,7 @@ import argparse
 import pathlib
 import functools
 import sys
+import shlex
 
 from math import ceil
 from io import BufferedWriter
@@ -99,6 +100,14 @@ hardware_type_list = [
     ),
 ]
 
+def read_config(config: pathlib.Path) -> list:
+    arguments = []
+    with open(config, 'r') as config_fp:
+        for line in config_fp:
+            if not line.lstrip().startswith('#'):
+                arguments += shlex.split(line)
+    return arguments
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(prog=PROGRAM_NAME, description="Convert .bin files to .chf files.")
 
@@ -164,7 +173,8 @@ def parse_args() -> argparse.Namespace:
             help=f"designates a range of memory as {chip_type.name.upper()}",
         )
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    return parser.parse_args(read_config(args.config) + sys.argv[1:])
 
 def validate_and_fetch_infile(infile: pathlib.Path) -> bytes:
     if infile.suffix != ".bin":

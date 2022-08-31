@@ -2,7 +2,7 @@
 
 # Set the title and filename
 --title "Oils Well"
---output oilswell.chf
+--outfile oilswell.chf
 
 # Set the hardware type to "Flashcart"
 --hardwaretype 5
