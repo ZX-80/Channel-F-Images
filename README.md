@@ -34,7 +34,7 @@ To solve these issues, the `.chf` file format needs to provide the necessary inf
 The file header contains basic information on the Videocart (name/hardware), as well as file format information that's necessary for interpretting the data, while allowing for future expansion. It's followed by a list of packets, described in the next section. Extra data can be included by extending the *file header length* beyond the Videocart name, as this will always be ignored.
 
 <div align = "center">
-  <img width="512" src="https://user-images.githubusercontent.com/44975876/172023092-1b55e73f-94f1-464b-bec8-7630d5358570.png">
+  <img width="512" src="https://user-images.githubusercontent.com/44975876/187803586-a0ab80d2-c46d-4230-840b-e178b76f97b2.png">
 
   *A `.chf` file storing a ROM+RAM Videocart called "3D MONSTER MAZE"*
 </div>
@@ -44,14 +44,14 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | Cartridge signature     | \$0000  | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
 | File header length      | \$0010  | 4              | `$xxxxxxx0` as the header is zero-padded to be 16-byte aligned |
 | File format version       | \$0014  | 2              | The version of the file format being used. Typically v1.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Cartridge hardware type | \$0016  | 2              | Described below                                              |
+| Cartridge hardware type | \$0016  | 2              | [Described below](#designated-hardware-type)                                              |
 | Reserved for future use | \$0018  | 8              |                                                              |
-| Videocart name length   | \$0020  | 1              | Allows a length of 1 - 256                                   |
+| Videocart name length   | \$0020  | 1              | Allows a length of 1 (0x00) to 256 (0xFF)                    |
 | Videocart name          | \$0021  | 1 - 256        |                                                              |
 
 ### Designated Hardware type
 
-| Name                    | Hardware Type Value | Memory-mapped | Port-mapped | Comments |
+| Name                    | Hardware Type Value | [Memory-mapped](#designated-chip-types) | [Port-mapped](#supported-io-port-devices) | Comments |
 | ----------------------- | ------------------- | ------------- | ----------- | -------- |
 | Videocart               | \$0000              | ROM           |             | Used by all Videocarts except 10, 18, and 20 (SABA) |
 | Videocarts 10 / 18      | \$0001              | ROM           | 2102 SRAM   |          |
@@ -93,7 +93,7 @@ The packet header contains basic information on how the expected hardware is acc
 | ----------------------- | -------------- | ------------------------------------------------------------ |
 | Signature               | 4              | `CHIP`. Used to detect a valid file.                         |
 | Total packet length     | 4              | Header + Data(only some chip types)                          |
-| Chip type               | 2              | Described below                                              |
+| Chip type               | 2              | [Described below](#designated-chip-types)                                              |
 | Bank number             | 2              | Used for banking. Always `$0000` when no banking scheme is used |
 | Starting load address   | 2              | Where the memory region starts                               |
 | Memory size in bytes    | 2              | The size of the memory region                                |
