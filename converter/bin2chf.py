@@ -123,7 +123,7 @@ def parse_args() -> argparse.Namespace:
         "-w",
         "--hardwaretype",
         type=int,
-        choices=list(range(len(hardware_type_list) + 1)),
+        choices=list(range(len(hardware_type_list))),
         default=2,
         help="described below",
     )
@@ -237,6 +237,8 @@ def map_bin_to_packets(infile_data: bytes, packets: list[Packet]) -> list[Packet
                 packet.data = infile_data[index:index + packet.image_size]
                 packet.image_size = len(packet.data)
                 valid_packets.append(packet)
+        else:
+            valid_packets.append(packet)
     return valid_packets
 
 def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) -> None:
@@ -271,14 +273,15 @@ def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) ->
 
         # Packets
         for packet in chf_data.packets:
-            fp.write("CHIP".encode('utf-8')) # Magic number: 4 bytes
+            fp.write("CHIP".encode('utf-8'))                          # Magic number: 4 bytes
             packet_length = 4 + 4 + 2 + 2 + 2 + 2 + packet.image_size # Packet length: 4 bytes
             fp.write(packet_length.to_bytes(4, 'little'))
-            fp.write(packet.chip_type.to_bytes(2, 'little')) # Chip type: 2 bytes
-            fp.write(packet.bank_number.to_bytes(2, 'little')) # Bank number: 2 bytes
-            fp.write(packet.load_address.to_bytes(2, 'little')) # Load address: 2 bytes
-            fp.write(packet.image_size.to_bytes(2, 'little')) # Data length: 2 bytes
-            fp.write(packet.data) # Chip type: 0 - 63,488 bytes  
+            fp.write(packet.chip_type.to_bytes(2, 'little'))          # Chip type: 2 bytes
+            fp.write(packet.bank_number.to_bytes(2, 'little'))        # Bank number: 2 bytes
+            fp.write(packet.load_address.to_bytes(2, 'little'))       # Load address: 2 bytes
+            fp.write(packet.image_size.to_bytes(2, 'little'))         # Data length: 2 bytes
+            if chip_type_list[packet.chip_type].has_data:
+                fp.write(packet.data)                                 # Data: 0 - 63,488 bytes
 
         fp.close()
     except OSError:
@@ -299,7 +302,7 @@ if __name__ == "__main__":
     packets = map_bin_to_packets(infile_data, packets)
     chf_data = ChfData(args.hardwaretype, FORMAT_VERSION, args.title, None, packets)
 
-    print(f"\nGenerating \"{args.outfile}\":")
+    print(f"\nGenerating \"{outfile_fp.name}\":")
     print(f"  Title: {args.title}")
     print(f"  Hardware Type: {hardware_type_list[args.hardwaretype].name} [{args.hardwaretype}]")
     print("  Packets:")
