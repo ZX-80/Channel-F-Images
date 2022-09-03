@@ -40,6 +40,7 @@ class Packet:
         self.load_address = load_address
         self.image_size = image_size
         self.data = data
+        self.old_image_size = image_size
 
 class HardwareType:
     def __init__(self, designation_id: uint16, name: str, packets: list[Packet], supports_manual_mapping: bool = False) -> None:
@@ -242,17 +243,11 @@ def get_memory_map(args: argparse.Namespace) -> list[Packet]:
 
 def map_bin_to_packets(infile_data: bytes, packets: list[Packet]) -> list[Packet]:
     infile_data = memoryview(infile_data) # Avoid unnecessary copying
-    valid_packets = []
     for packet in packets:
         if chip_type_list[packet.chip_type].has_data:
             index = packet.load_address - 0x800
-            if index <= len(infile_data) - 1:
-                packet.data = infile_data[index:index + packet.image_size]
-                packet.image_size = len(packet.data)
-                valid_packets.append(packet)
-        else:
-            valid_packets.append(packet)
-    return valid_packets
+            packet.data = infile_data[index:index + packet.image_size]
+            packet.image_size = len(packet.data)
 
 def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) -> None:
     try:
@@ -315,7 +310,7 @@ if __name__ == "__main__":
         args.title = 'out'
 
     packets = get_memory_map(args)
-    packets = map_bin_to_packets(infile_data, packets)
+    map_bin_to_packets(infile_data, packets)
     chf_data = ChfData(args.hardwaretype, FORMAT_VERSION, args.title, None, packets)
 
     print(f"\nGenerating \"{outfile_fp.name}\":")
@@ -324,8 +319,14 @@ if __name__ == "__main__":
     print("  Packets:")
     for packet in packets:
         print(f"    Type: {chip_type_list[packet.chip_type].name.upper()} [{packet.chip_type}]", end=', ')
-        print(f"Start: 0x{packet.load_address:x}", end=', ')
-        print(f"Size: 0x{packet.image_size:x} bytes")
+        print(f"Start: 0x{packet.load_address:04x}", end=', ')
+        print(f"Size: 0x{packet.image_size:04x} bytes", end=' '*6)
+        if packet.image_size == 0:
+            print("(DELETED)")
+        elif packet.image_size != packet.old_image_size:
+            print(f"(reduced by {packet.old_image_size - packet.image_size} bytes)")
+        else:
+            print()
 
     create_chf_file(outfile_fp, chf_data, args.outfile)
     print("\nOK")
