@@ -129,11 +129,8 @@ This script was developed and tested on Windows, but likely works on other opera
 
 **2. Install the script**
 
-  - Create a folder where you'd like the script to live
-  - Download the script files from github by clicking **Code** and then **Download Zip**
-  - Unzip the files in `Videocart-Image-Format-main.zip` into the folder you created
-  - The only file that matters is `bin2chf.py`. The others are just helpful text files that can be deleted if you want
+  Download the python script from the [latest release](https://github.com/ZX-80/Videocart-Image-Format/releases/latest/download/bin2chf.py) on github
 
-  ## Updating
+## Updating
 
-  To update, simply delete the old script, and reinstall as shown above
+To update, simply delete the old script, and reinstall as shown above
