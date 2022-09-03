@@ -18,7 +18,7 @@ from io import BufferedWriter
 from typing import TypeAlias
 
 PROGRAM_NAME = "bin2chf"
-PROGRAM_VERSION = "1.0"
+PROGRAM_VERSION = "1.0.0"
 FORMAT_VERSION = "1.0"
 
 uint8: TypeAlias = int
