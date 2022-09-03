@@ -18,7 +18,7 @@ from io import BufferedWriter
 from typing import TypeAlias
 
 PROGRAM_NAME = "bin2chf"
-PROGRAM_VERSION = "1.0.0"
+PROGRAM_VERSION = "1.1.0"
 FORMAT_VERSION = "1.0"
 
 uint8: TypeAlias = int
@@ -42,11 +42,11 @@ class Packet:
         self.data = data
 
 class HardwareType:
-    def __init__(self, designation_id: uint16, name: str, packets: list[Packet], manual_memory_map: bool = False) -> None:
+    def __init__(self, designation_id: uint16, name: str, packets: list[Packet], supports_manual_mapping: bool = False) -> None:
         self.designation_id = designation_id
         self.name = name
         self.packets = packets
-        self.manual_memory_map = manual_memory_map
+        self.supports_manual_mapping = supports_manual_mapping
 
 class ChfData:
     def __init__(self, hardware_type: uint16, version: str, title: str, extra: str, packets: list[Packet]) -> None:
@@ -97,7 +97,7 @@ hardware_type_list = [
             Packet(chip_type=ChipType.RAM, load_address=0x2800, image_size=0x800),
             Packet(chip_type=ChipType.ROM, load_address=0x3000, image_size=0xC800),
         ],
-        manual_memory_map = True
+        supports_manual_mapping = True
     ),
 ]
 
@@ -216,27 +216,28 @@ def get_memory_map(args: argparse.Namespace) -> list[Packet]:
     
     # Memory map provided by user?
     if True in (bool(getattr(args, chip_type.name)) for chip_type in chip_type_list):
-        if hardware_type_list[args.hardwaretype].manual_memory_map:
-            # Build packets
-            packets = []
-            for chip_type in chip_type_list:
-                for start, size in getattr(args, chip_type.name):
-                    packets.append(Packet(chip_type.designation_id, start, size))
+        if not hardware_type_list[args.hardwaretype].supports_manual_mapping: # NOTE: are hardware type memory mappings fixed?
+            print("[WARNING] Memory map was not expected for this hardware type")
 
-            # Validate packet ranges
-            for packet in packets:
-                if not 0x800 <= packet.load_address <= 0xffff:
-                    sys.exit(f"[ERROR] Load address \"0x{packet.load_address:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x0800 & 0xffff")
-                if not 1 <= packet.image_size <= 0x10000 - packet.load_address:
-                    sys.exit(f"[ERROR] Size \"0x{packet.image_size:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x1 & 0x{0x10000 - packet.load_address:x}")
+        # Build packets
+        packets = []
+        for chip_type in chip_type_list:
+            for start, size in getattr(args, chip_type.name):
+                packets.append(Packet(chip_type.designation_id, start, size))
 
-            # Check for overlapping packets
-            packets = sorted(packets, key=lambda packet: packet.load_address)
-            for prev_packet, packet in zip(packets[::2], packets[1::2]):
-                if packet.load_address < prev_packet.load_address + prev_packet.image_size:
-                    sys.exit(f"[ERROR] Packet \"{generate_arg_text(packet)}\" overlaps packet \"{generate_arg_text(prev_packet)}\"")
-        else:
-            print("[WARNING] Hardware type doesn't support manual memory map")
+        # Validate packet ranges
+        for packet in packets:
+            if not 0x800 <= packet.load_address <= 0xffff:
+                sys.exit(f"[ERROR] Load address \"0x{packet.load_address:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x0800 & 0xffff")
+            if not 1 <= packet.image_size <= 0x10000 - packet.load_address:
+                sys.exit(f"[ERROR] Size \"0x{packet.image_size:x}\" in \"{generate_arg_text(packet)}\" is invalid. Must be between 0x1 & 0x{0x10000 - packet.load_address:x}")
+
+        # Check for overlapping packets
+        packets = sorted(packets, key=lambda packet: packet.load_address)
+        for prev_packet, packet in zip(packets[::2], packets[1::2]):
+            if packet.load_address < prev_packet.load_address + prev_packet.image_size:
+                sys.exit(f"[ERROR] Packet \"{generate_arg_text(packet)}\" overlaps packet \"{generate_arg_text(prev_packet)}\"")
+            
     return packets
 
 def map_bin_to_packets(infile_data: bytes, packets: list[Packet]) -> list[Packet]:
