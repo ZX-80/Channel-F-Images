@@ -4,6 +4,8 @@
 """Convert Channel F .bin files into .chf files"""
 
 # TODO: multi-cart support
+# TODO: extra string data support
+# TODO: extra file data support
 
 import argparse
 import pathlib
@@ -99,12 +101,13 @@ hardware_type_list = [
     ),
 ]
 
-def read_config(config: pathlib.Path) -> list:
+def read_config(config: pathlib.Path | None) -> list[str]:
     arguments = []
-    with open(config, 'r') as config_fp:
-        for line in config_fp:
-            if not line.lstrip().startswith('#'):
-                arguments += shlex.split(line)
+    if config is not None:
+        with open(config, 'r') as config_fp:
+            for line in config_fp:
+                if not line.lstrip().startswith('#'):
+                    arguments += shlex.split(line)
     return arguments
 
 def parse_args() -> argparse.Namespace:
@@ -272,7 +275,7 @@ def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) ->
         fp.write((0).to_bytes(8, 'little'))
 
         # Title length: 1 byte
-        fp.write((len(chf_data.title) - 1).to_bytes(1, 'little')) # XXX: is a simpler mapping better?
+        fp.write((len(chf_data.title) - 1).to_bytes(1, 'little')) # NOTE: is a simpler mapping better?
 
         # Title: 1 - 256 bytes
         fp.write(chf_data.title.encode('utf-8'))
@@ -282,15 +285,18 @@ def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) ->
 
         # Packets
         for packet in chf_data.packets:
-            fp.write("CHIP".encode('utf-8'))                          # Magic number: 4 bytes
-            packet_length = 4 + 4 + 2 + 2 + 2 + 2 + packet.image_size # Packet length: 4 bytes
+            packet_header_address = fp.tell()
+            fp.write("CHIP".encode('utf-8'))                            # Magic number: 4 bytes
+            packet_length = 4 + 4 + 2 + 2 + 2 + 2 + packet.image_size   # Packet length padded to be 16-byte aligned: 4 bytes
+            packet_length = 16 * ceil(packet_length / 16)
             fp.write(packet_length.to_bytes(4, 'little'))
-            fp.write(packet.chip_type.to_bytes(2, 'little'))          # Chip type: 2 bytes
-            fp.write(packet.bank_number.to_bytes(2, 'little'))        # Bank number: 2 bytes
-            fp.write(packet.load_address.to_bytes(2, 'little'))       # Load address: 2 bytes
-            fp.write(packet.image_size.to_bytes(2, 'little'))         # Data length: 2 bytes
+            fp.write(packet.chip_type.to_bytes(2, 'little'))            # Chip type: 2 bytes
+            fp.write(packet.bank_number.to_bytes(2, 'little'))          # Bank number: 2 bytes
+            fp.write(packet.load_address.to_bytes(2, 'little'))         # Load address: 2 bytes
+            fp.write(packet.image_size.to_bytes(2, 'little'))           # Data length: 2 bytes
             if chip_type_list[packet.chip_type].has_data:
-                fp.write(packet.data)                                 # Data: 0 - 63,488 bytes
+                fp.write(packet.data)                                   # Data: 0 - 63,488 bytes
+                fp.write((0).to_bytes(packet_length - fp.tell() + packet_header_address, 'little')) # Padding: 0 - 15 bytes
 
         fp.close()
     except OSError:
