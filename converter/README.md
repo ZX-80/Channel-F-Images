@@ -41,7 +41,7 @@ OK
 C:\Windows\System32>
 ```
 
-To create a custom memory map, use hardware type 5 (Flashcart) with the rom/ram/led/nvram arguments
+To create a custom memory map, use the rom/ram/led/nvram arguments
 
 ```
 C:\Windows\System32> bin2chf game.bin -t "3D MONSTER MAZE" -w 5 -rom 0x800 439 -ram 0xf000 0xff
@@ -84,7 +84,7 @@ C:\Windows\System32>
 
 ## Configuration
 
-For convenience, a config file can be created to store terminal arguments. The arguments will be run as if they were entered on the command line, but can be overridden if needed. It can then be used like so:
+For convenience, a config file can be created to store command line arguments. The arguments will be run as if they were entered on the command line, but can be overridden if needed. It can then be used like so:
 
 `bin2chf game.bin --config example.txt`
 
