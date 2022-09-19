@@ -46,7 +46,7 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | File format version       | \$0014  | 2              | The version of the file format being used. Typically v1.00. Implementations should refuse to run games with major version numbers unknown by them. |
 | Cartridge hardware type | \$0016  | 2              | [Described below](#designated-hardware-type)                                              |
 | Reserved for future use | \$0018  | 8              |                                                              |
-| Videocart name length   | \$0020  | 1              | Allows a length of 1 (0x00) to 256 (0xFF)                    |
+| Videocart name length   | \$0020  | 1              | Allows a length of 1 ($00) to 256 ($FF)                      |
 | Videocart name          | \$0021  | 1 - 256        |                                                              |
 
 ### Designated Hardware type
@@ -64,12 +64,12 @@ The file header contains basic information on the Videocart (name/hardware), as 
 
 | Name                                  | Port(s)   | Comments                                                  |
 | ------------------------------------- | --------- | --------------------------------------------------------- |
-| Interrupt control                     | 0x06      | From the MK 3870/3871 IC                                  |
-| Binary Timer                          | 0x07      | From the MK 3870/3871 IC                                  |
-| 2102 SRAM                             | 0x18/0x19 | 1-bit RAM. Ports described [here](http://seanriddle.com/mazepat.asm) |
-| Programmable interrupt vector address | 0x0C/0x0D | From the 3853 SMI IC                                      |
-| Programmable timer                    | 0x0E      | From the 3853 SMI IC                                      |
-| Interrupt control                     | 0x0F      | From the 3853 SMI IC                                      |
+| Interrupt control                     | $6      | From the MK 3870/3871 IC                                  |
+| Binary Timer                          | $7      | From the MK 3870/3871 IC                                  |
+| 2102 SRAM                             | $20 / $21 / $24 / $25 | 1-bit RAM. Ports described [here](http://seanriddle.com/mazepat.asm) |
+| Programmable interrupt vector address | $C / $D | From the 3853 SMI IC                                      |
+| Programmable timer                    | $E      | From the 3853 SMI IC                                      |
+| Interrupt control                     | $F      | From the 3853 SMI IC                                      |
 
 
 
