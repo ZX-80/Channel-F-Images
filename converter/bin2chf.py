@@ -3,7 +3,6 @@
 
 """Convert Channel F .bin files into .chf files"""
 
-# TODO: multi-cart support
 # TODO: extra string data support
 # TODO: extra file data support
 
@@ -18,7 +17,7 @@ from io import BufferedWriter
 from typing import TypeAlias
 
 PROGRAM_NAME = "bin2chf"
-PROGRAM_VERSION = "1.1.0"
+PROGRAM_VERSION = "1.2.0"
 FORMAT_VERSION = "1.0"
 
 uint8: TypeAlias = int
@@ -50,12 +49,13 @@ class HardwareType:
         self.supports_manual_mapping = supports_manual_mapping
 
 class ChfData:
-    def __init__(self, hardware_type: uint16, version: str, title: str, extra: str, packets: list[Packet]) -> None:
+    def __init__(self, hardware_type: uint16, version: str, title: str, extra: str, packets: list[Packet], boot: bool) -> None:
         self.hardware_type = hardware_type
         self.version = version
         self.title = title
         self.extra = extra
         self.packets = packets
+        self.boot = boot
 
 chip_type_list = [
     ChipType(0, "ROM", has_data=True),
@@ -124,6 +124,12 @@ def parse_args() -> argparse.Namespace:
         "--outfile",
         type=pathlib.Path,
         help="the output file name",
+    )
+    parser.add_argument(
+        "-b",
+        "--boot",
+        action="store_true",
+        help="mark file as bootable",
     )
     parser.add_argument(
         "-c",
@@ -268,7 +274,8 @@ def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) ->
         fp.write(chf_data.hardware_type.to_bytes(2, 'little'))
 
         # Reserved: 8 bytes
-        fp.write((0).to_bytes(8, 'little'))
+        fp.write(bytes([1 * chf_data.boot])) # 0x00 = not bootable, 0x01 = bootable
+        fp.write((0).to_bytes(7, 'little'))
 
         # Title length: 1 byte
         fp.write((len(chf_data.title) - 1).to_bytes(1, 'little')) # NOTE: is a simpler mapping better?
@@ -311,11 +318,12 @@ if __name__ == "__main__":
 
     packets = get_memory_map(args)
     map_bin_to_packets(infile_data, packets)
-    chf_data = ChfData(args.hardwaretype, FORMAT_VERSION, args.title, None, packets)
+    chf_data = ChfData(args.hardwaretype, FORMAT_VERSION, args.title, None, packets, args.boot)
 
     print(f"\nGenerating \"{outfile_fp.name}\":")
     print(f"  Title: {args.title}")
     print(f"  Hardware Type: {hardware_type_list[args.hardwaretype].name} [{args.hardwaretype}]")
+    print(f"  Bootable: {'Yes' if args.boot else 'No'}")
     print("  Packets:")
     for packet in packets:
         print(f"    Type: {chip_type_list[packet.chip_type].name.upper()} [{packet.chip_type}]", end=', ')
