@@ -2,7 +2,7 @@
 
 # BIN to CHF
  
-![badge](https://badgen.net/badge/version/v1.1.0/orange?style=flat-square)
+![badge](https://badgen.net/badge/version/v1.2.1/orange?style=flat-square)
 ![badge](https://badgen.net/badge/platform/win-32%20|%20win-64/green?style=flat-square)
 ![badge](https://badgen.net/badge/python/3.10+/blue?style=flat-square)
 
