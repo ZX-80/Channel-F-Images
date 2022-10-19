@@ -17,7 +17,7 @@ from io import BufferedWriter
 from typing import TypeAlias
 
 PROGRAM_NAME = "bin2chf"
-PROGRAM_VERSION = "1.2.0"
+PROGRAM_VERSION = "1.2.1"
 FORMAT_VERSION = "1.0"
 
 uint8: TypeAlias = int
@@ -278,7 +278,7 @@ def create_chf_file(fp: BufferedWriter, chf_data: ChfData, outfile_name: str) ->
         fp.write((0).to_bytes(7, 'little'))
 
         # Title length: 1 byte
-        fp.write((len(chf_data.title) - 1).to_bytes(1, 'little')) # NOTE: is a simpler mapping better?
+        fp.write(len(chf_data.title).to_bytes(1, 'little'))
 
         # Title: 1 - 256 bytes
         fp.write(chf_data.title.encode('utf-8'))
