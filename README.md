@@ -54,8 +54,8 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | Name                    | Hardware Type Value | [Memory-mapped](#designated-chip-types) | [Port-mapped](#supported-io-port-devices) | Comments |
 | ----------------------- | ------------------- | ------------- | ----------- | -------- |
 | Videocart               | \$0000              | ROM           |             | Used by all official Videocarts except 10, 18, and 20 (SABA) |
-| Videocarts 10 (Maze)    | \$0001              | ROM           | 2102 SRAM   | Uses ports $24/$25 |
-| Videocarts 18 (Hangman) | \$0002              | ROM           | 2102 SRAM   | Uses ports $20/$21 |
+| Videocart 10 (Maze)     | \$0001              | ROM           | 2102 SRAM   | Uses ports $24/$25 |
+| Videocart 18 (Hangman)  | \$0002              | ROM           | 2102 SRAM   | Uses ports $20/$21 |
 | ROM+RAM (With 3853)     | \$0003              | ROM, RAM      | 3853 SMI    | Used by some homebrew videocarts |
 | SABA Videoplay 20       | \$0004              | ROM, RAM, LED | 3853 SMI    |          |
 | Flashcart               | \$0005              | All           | All         | Used by the Videocart-π to provide any unofficial memory/port types |
