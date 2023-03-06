@@ -53,12 +53,12 @@ The file header contains basic information on the Videocart (name/hardware), as 
 
 | Name                    | Hardware Type Value | [Memory-mapped](#designated-chip-types) | [Port-mapped](#supported-io-port-devices) | Comments |
 | ----------------------- | ------------------- | ------------- | ----------- | -------- |
-| Videocart               | \$0000              | ROM           |             | Used by all Videocarts except 10, 18, and 20 (SABA) |
-| Videocarts 10 / 18      | \$0001              | ROM           | 2102 SRAM   |          |
-| ROM+RAM (With 3853)     | \$0002              | ROM, RAM      | 3853 SMI    |          |
-| SABA Videoplay 20       | \$0003              | ROM, RAM, LED | 3853 SMI    |          |
-| Multi-Cart              | \$0004              | ROM, RAM      | 3853 SMI    | Has selectable banking |
-| Flashcart               | \$0005              | All           | All         |          |
+| Videocart               | \$0000              | ROM           |             | Used by all official Videocarts except 10, 18, and 20 (SABA) |
+| Videocarts 10 (Maze)    | \$0001              | ROM           | 2102 SRAM   | Uses ports $24/$25 |
+| Videocarts 18 (Hangman) | \$0002              | ROM           | 2102 SRAM   | Uses ports $20/$21 |
+| ROM+RAM (With 3853)     | \$0003              | ROM, RAM      | 3853 SMI    | Used by some homebrew videocarts |
+| SABA Videoplay 20       | \$0004              | ROM, RAM, LED | 3853 SMI    |          |
+| Flashcart               | \$0005              | All           | All         | Used by the Videocart-π to provide any unofficial memory/port types |
 
 ### Supported I/O Port Devices
 
@@ -75,11 +75,11 @@ The file header contains basic information on the Videocart (name/hardware), as 
 
 # Packet Overview
 
-Packets serve as hardware descriptors, providing information on what hardware the game expects to be present. Some packets are special, as they provides the data that is (or would be) present in the on-board ROM / NVRAM. **Note:** Packets are always zero-padded to be 16-byte aligned.
+Packets serve as hardware descriptors, providing information on what hardware the game expects to be present. Some packets are special, as they provides the data that is (or would be) present in the on-board ROM / NVRAM. Packets are always zero-padded to be 16-byte aligned.
 
 # Packet Header
 
-The packet header contains basic information on how the expected hardware is accessed. Note that
+The packet header contains basic information on how the expected hardware is accessed.
 
 <div align = "center">
   <img width="512" src="https://user-images.githubusercontent.com/44975876/172023103-309797bd-a0e2-4caa-ae79-497148057ab7.png">
@@ -97,7 +97,7 @@ The packet header contains basic information on how the expected hardware is acc
 | Bank number             | 2              | Used for banking. Always `$0000` when no banking scheme is used |
 | Starting load address   | 2              | Where the memory region starts                               |
 | Memory size in bytes    | 2              | The size of the memory region                                |
-| Data                    | 0 - 63,488     | Only present for the some chip types. Technically supports up to 65,536 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
+| Data                    | 0 - 63,487     | Only present for some chip types. Technically supports up to 65,535 bytes but the first 2K of memory (\$0000 - \$07FF) should always be the BIOS, so the largest practical range is \$0800 - \$FFFF |
 
 ### Designated Chip Types
 
@@ -110,4 +110,4 @@ The packet header contains basic information on how the expected hardware is acc
 
 # Credits
 
-Developed by e5frog (from AtariAge) and Jefferson A. (3DMAZE at AtariAge)
+Developed by e5frog (from AtariAge) and 3DMAZE (from AtariAge)
