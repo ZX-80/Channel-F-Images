@@ -44,12 +44,12 @@ The file header contains basic information on the Videocart (name/hardware), as 
 | Cartridge signature     | \$0000  | 16             | `CHANNEL F`. Used to detect a valid file. Padded with spaces |
 | File header length      | \$0010  | 4              | `$xxxxxxx0` as the header is zero-padded to be 16-byte aligned |
 | File format version       | \$0014  | 2              | The version of the file format being used. Typically v1.00. Implementations should refuse to run games with major version numbers unknown by them. |
-| Cartridge hardware type | \$0016  | 2              | [Described below](#designated-hardware-type)                 |
+| Cartridge hardware type | \$0016  | 2              | [Described below](#designated-hardware-types)                |
 | Reserved for future use | \$0018  | 8              |                                                              |
 | Videocart name length   | \$0020  | 1              |                                                              |
 | Videocart name          | \$0021  | 0 - 255        | UTF-8 encoded                                                |
 
-### Designated Hardware type
+### Designated Hardware types
 
 | Name                    | Hardware Type Value | [Memory-mapped](#designated-chip-types) | [Port-mapped](#supported-io-port-devices) | Comments |
 | ----------------------- | ------------------- | ------------- | ----------- | -------- |
